@@ -1,60 +1,37 @@
-using System.Collections.Immutable;
-using PROG25.OOAD.SportsBook.Domain.ValueObjects.Metrics;
+using PROG25.OOAD.SportsBook.Domain.ValueObjects.Metrics.Definitions;
+using PROG25.OOAD.SportsBook.Domain.ValueObjects.Metrics.Values;
 using PROG25.OOAD.SportsBook.Domain.ValueObjects.Scopes;
 
 namespace PROG25.OOAD.SportsBook.Domain.ValueObjects.Events;
 
-public abstract record EventMetrics
+public record EventMetrics
 {
-    private readonly ImmutableHashSet<Metric> _supportedMetrics = new HashSet<Metric>
-    {
-        ReferenceValueBasedMetric.ElapsedActualTimeSeconds,
-        ReferenceValueBasedMetric.ElapsedMatchTimeSeconds
-    }.ToImmutableHashSet();
+    private readonly ISet<MetricValue> _metricValues;
 
-    public EventMetrics
-    (
-        TimeSpan elapsedMatchTime,
-        TimeSpan elapsedActualTime
-    )
+    public EventMetrics(ISet<MetricValue> metricValues)
     {
-        ElapsedMatchTime = elapsedMatchTime;
-        ElapsedActualTime = elapsedActualTime;
+        _metricValues = metricValues;
     }
 
-    public TimeSpan ElapsedMatchTime { get; private set; }
-    public TimeSpan ElapsedActualTime { get; private set; }
-
-    internal abstract ScopedEventMetrics ExtractScope(Scope scope);
-    internal virtual ScopedEventMetrics ExtractTeamScope(TeamId teamId) { throw new NotImplementedException(); }
-    internal virtual ScopedEventMetrics ExtractPlayerScope(PlayerId playerId) { throw new NotImplementedException(); }
-    internal abstract ScopedEventMetrics ExtractEventScope();
-    internal abstract List<ScopedEventMetrics> ExtractAllScopes(ScopeType scopeType);
-
-    public virtual void UpdateMetric(TeamId teamId, PlayerId playerId, MetricType metricType, decimal newValue)
+    public MetricValue Extract(ScopedMetricDefinition scopedMetricDefinition)
     {
-        switch (metricType)
+        if (!IsSupportedMetric(scopedMetricDefinition.Metric))
         {
-            case MetricType.ElapsedMatchTimeSeconds:
-                ElapsedMatchTime = TimeSpan.FromSeconds(Math.Floor((double)newValue));
-                break;
-            case MetricType.ElapsedActualTimeSeconds:
-                ElapsedActualTime = TimeSpan.FromSeconds(Math.Floor((double)newValue));
-                break;
-            default:
-                throw new NotSupportedException($"Metric type {metricType} is not supported for update in EventState.");
+            throw new ArgumentException($"The metric '{scopedMetricDefinition.Metric.Name}' is not supported for this event.");
         }
+
+        var metricValue = _metricValues.Single(mv => mv.Definition == scopedMetricDefinition);
+        return metricValue;
     }
 
-    protected abstract ImmutableHashSet<Metric> SupportedMetrics { get; }
-
-    internal ImmutableHashSet<Metric> GetSupportedMetrics()
+    public List<MetricValue> ExtractAll(ScopeType scope, MetricDefinition metricDefinition)
     {
-        return _supportedMetrics.Union(SupportedMetrics);
+        var metricValues = _metricValues.Where(mv => mv.Definition.Scope.Type == scope && mv.Definition.Metric == metricDefinition).ToList();
+        return metricValues;
     }
 
-    public bool IsSupportedMetric(MetricType metricType)
+    public bool IsSupportedMetric(MetricDefinition metric)
     {
-        return GetSupportedMetrics().Any(m => m.Type == metricType);
+        return _metricValues.Any(mv => mv.Definition.Metric == metric);
     }
 }

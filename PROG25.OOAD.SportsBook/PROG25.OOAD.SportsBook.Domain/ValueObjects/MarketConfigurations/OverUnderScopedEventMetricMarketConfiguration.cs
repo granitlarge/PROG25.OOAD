@@ -1,22 +1,20 @@
 using PROG25.OOAD.SportsBook.Domain.ValueObjects.MarketConfigurations.Abstractions;
-using PROG25.OOAD.SportsBook.Domain.ValueObjects.Metrics;
-using PROG25.OOAD.SportsBook.Domain.ValueObjects.Scopes;
+using PROG25.OOAD.SportsBook.Domain.ValueObjects.Metrics.Definitions;
 using PROG25.OOAD.SportsBook.Domain.ValueObjects.Timestamps.Abstractions;
 
 namespace PROG25.OOAD.SportsBook.Domain.ValueObjects.MarketConfigurations;
 
-public record OverUnderEventMetricMarketConfiguration : ScopedEventMetricMarketConfiguration
+public record OverUnderScopedEventMetricMarketConfiguration : ScopedEventMetricMarketConfiguration
 {
-    public OverUnderEventMetricMarketConfiguration
+    public OverUnderScopedEventMetricMarketConfiguration
     (
-        Metric metric,
-        Scope scope,
+        ScopedMetricDefinition scopedMetricDefinition,
         EventDataTimestamp timestamp,
         string name,
         decimal threshold
-    ) : base(metric, scope, timestamp, name)
+    ) : base(scopedMetricDefinition, timestamp, name)
     {
-        if (!metric.IsValidMetricValue(threshold))
+        if (!scopedMetricDefinition.Metric.IsValidMetricValue(threshold))
         {
             throw new ArgumentException("Invalid threshold value for the given metric.", nameof(threshold));
         }

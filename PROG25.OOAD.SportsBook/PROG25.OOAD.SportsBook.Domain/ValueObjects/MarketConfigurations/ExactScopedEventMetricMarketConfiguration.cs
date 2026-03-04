@@ -1,22 +1,20 @@
 using PROG25.OOAD.SportsBook.Domain.ValueObjects.MarketConfigurations.Abstractions;
-using PROG25.OOAD.SportsBook.Domain.ValueObjects.Metrics;
-using PROG25.OOAD.SportsBook.Domain.ValueObjects.Scopes;
+using PROG25.OOAD.SportsBook.Domain.ValueObjects.Metrics.Definitions;
 using PROG25.OOAD.SportsBook.Domain.ValueObjects.Timestamps.Abstractions;
 
 namespace PROG25.OOAD.SportsBook.Domain.ValueObjects.MarketConfigurations;
 
-public record ExactEventMetricMarketConfiguration : ScopedEventMetricMarketConfiguration
+public record ExactScopedEventMetricMarketConfiguration : ScopedEventMetricMarketConfiguration
 {
-    public ExactEventMetricMarketConfiguration
+    public ExactScopedEventMetricMarketConfiguration
     (
-        Metric metric,
-        Scope scope,
+        ScopedMetricDefinition scopedMetricDefinition,
         EventDataTimestamp timestamp,
         string name,
         decimal expectedValue
-    ) : base(metric, scope, timestamp, name)
+    ) : base(scopedMetricDefinition, timestamp, name)
     {
-        if (!metric.IsValidMetricValue(expectedValue))
+        if (!scopedMetricDefinition.Metric.IsValidMetricValue(expectedValue))
         {
             throw new ArgumentException("Invalid expected value for the given metric.", nameof(expectedValue));
         }

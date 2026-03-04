@@ -3,7 +3,7 @@ using PROG25.OOAD.SportsBook.Domain.ValueObjects;
 
 namespace PROG25.OOAD.SportsBook.Application.Repositories;
 
-public interface IMarketRepository : IRepositoryBase<MarketId, Market>
+public interface IMarketRepository : IRepositoryBase<MarketId, EventMetricMarket>
 {
 
 }

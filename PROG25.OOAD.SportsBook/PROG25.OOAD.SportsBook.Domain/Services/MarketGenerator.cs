@@ -6,7 +6,7 @@ namespace PROG25.OOAD.SportsBook.Domain.Services;
 
 public class MarketGenerator
 {
-    public static List<Market> GenerateMarketsForMatch(Event match)
+    public static List<EventMetricMarket> GenerateMarketsForMatch(Event match)
     {
         switch (match.Type)
         {

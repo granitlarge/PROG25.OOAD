@@ -5,6 +5,7 @@ using PROG25.OOAD.SportsBook.Domain.Entities.Outcomes;
 using PROG25.OOAD.SportsBook.Domain.ValueObjects;
 using PROG25.OOAD.SportsBook.Domain.ValueObjects.Events;
 using PROG25.OOAD.SportsBook.Domain.ValueObjects.MarketConfigurations;
+using PROG25.OOAD.SportsBook.Domain.ValueObjects.Scopes;
 
 namespace PROG25.OOAD.SportsBook.Domain.Aggregates.Events;
 
@@ -33,27 +34,24 @@ public abstract class Event
     public virtual EventData Data { get; }
     public ImmutableHashSet<Team> Teams => _teams.ToImmutableHashSet();
 
-    public ChangeEventMetricMarket CreateMarket(YesNoOutcome yesOutcome, YesNoOutcome noOutcome, ValueObjects.MarketConfigurations.ComparisonScopedEventMetricMarketConfiguration configuration)
+    public ComparisonScopedEventMetricMarket CreateMarket(YesNoOutcome yesOutcome, YesNoOutcome noOutcome, ChangeScopedEventMetricMarketConfiguration configuration)
     {
-        var teamPlayerPairs = _teams.SelectMany(t => t.Players.Select(p => (t.Id, p.Id))).ToHashSet();
-        return new ChangeEventMetricMarket(Id, Data, teamPlayerPairs, yesOutcome, noOutcome, configuration);
+        return ChangeScopedEventMetricMarket.Create(Id, Data, yesOutcome, noOutcome, configuration);
     }
 
-    public EqualScopedEventMetricMarket CreateMarket(YesNoOutcome yesOutcome, YesNoOutcome noOutcome, EqualScopedEventMetricMarketConfiguration configuration)
+    public EqualScopeEventMetricMarket CreateMarket(YesNoOutcome yesOutcome, YesNoOutcome noOutcome, EqualScopeEventMetricMetricMarketConfiguration configuration)
     {
-        return new EqualScopedEventMetricMarket(Id, Data, yesOutcome, noOutcome, configuration);
+        return new EqualScopeEventMetricMarket(Id, yesOutcome, noOutcome, configuration);
     }
 
-    public ComparisonScopedEventMetricMarket CreateMarket(YesNoOutcome yesOutcome, YesNoOutcome noOutcome, ExactEventMetricMarketConfiguration configuration)
+    public ComparisonScopedEventMetricMarket CreateMarket(YesNoOutcome yesOutcome, YesNoOutcome noOutcome, ExactScopedEventMetricMarketConfiguration configuration)
     {
-        var teamPlayerPairs = _teams.SelectMany(t => t.Players.Select(p => (t.Id, p.Id))).ToHashSet();
-        return ExactEventMetricMarket.Create(Id, Data, teamPlayerPairs, yesOutcome, noOutcome, configuration);
+        return ExactEventMetricMarket.Create(Id, Data, yesOutcome, noOutcome, configuration);
     }
 
-    public OptimalEventMetricMarket CreateMarket(YesNoOutcome yesOutcome, YesNoOutcome noOutcome, OptimalEventMetricMarketConfiguration configuration)
+    public OptimalEventMetricMarket CreateMarket(YesNoOutcome yesOutcome, YesNoOutcome noOutcome, OptimalScopedEventMetricMarketConfiguration configuration)
     {
-        var teamPlayerPairs = _teams.SelectMany(t => t.Players.Select(p => (t.Id, p.Id))).ToHashSet();
-        return new OptimalEventMetricMarket(Id, Data, teamPlayerPairs, yesOutcome, noOutcome, configuration);
+        return new OptimalEventMetricMarket(Id, Data, yesOutcome, noOutcome, configuration);
     }
 
     public OverUnderEventMetricMarket CreateMarket
@@ -61,10 +59,9 @@ public abstract class Event
         OverUnderOutcome underOutcome,
         OverUnderOutcome overOutcome,
         OverUnderOutcome pushOutcome,
-        OverUnderEventMetricMarketConfiguration configuration
+        OverUnderScopedEventMetricMarketConfiguration configuration
     )
     {
-        var teamPlayerPairs = _teams.SelectMany(t => t.Players.Select(p => (t.Id, p.Id))).ToHashSet();
-        return new OverUnderEventMetricMarket(Id, Data, teamPlayerPairs, overOutcome, underOutcome, pushOutcome, configuration);
+        return new OverUnderEventMetricMarket(Id, Data, overOutcome, underOutcome, pushOutcome, configuration);
     }
 }

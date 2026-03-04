@@ -1,4 +1,4 @@
-using PROG25.OOAD.SportsBook.Domain.ValueObjects;
+using PROG25.OOAD.SportsBook.Domain.ValueObjects.Odds;
 
 namespace PROG25.OOAD.SportsBook.Domain.Entities.Outcomes;
 

@@ -12,13 +12,4 @@ public record PlayerScope : Scope
 
     public PlayerId PlayerId { get; }
 
-    internal override ScopedEventMetrics ExtractScopedMetrics(EventMetrics state)
-    {
-        return state.ExtractPlayerScope(PlayerId);
-    }
-
-    internal override bool IsValidForEventParticipans(ISet<(TeamId TeamId, PlayerId PlayerId)> teamPlayerPairs)
-    {
-        return teamPlayerPairs.Any(pair => pair.PlayerId == PlayerId);
-    }
 }

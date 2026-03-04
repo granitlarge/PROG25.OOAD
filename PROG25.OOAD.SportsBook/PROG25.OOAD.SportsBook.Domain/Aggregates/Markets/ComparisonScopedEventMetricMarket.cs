@@ -12,11 +12,10 @@ public class ComparisonScopedEventMetricMarket : ScopedEventMetricMarket
     (
         EventId eventId,
         EventData eventData,
-        ISet<(TeamId, PlayerId)> teamPlayerPairs,
         YesNoOutcome yesOutcome,
         YesNoOutcome noOutcome,
         ComparisonScopedEventMetricMarketConfiguration configuration
-    ) : base(eventId, eventData, teamPlayerPairs, new HashSet<Outcome> { yesOutcome, noOutcome }, configuration)
+    ) : base(eventId, eventData, configuration, new HashSet<Outcome> { yesOutcome, noOutcome })
     {
         if (!yesOutcome.IsYes)
         {
@@ -44,13 +43,9 @@ public class ComparisonScopedEventMetricMarket : ScopedEventMetricMarket
             return settlementAttemptStatus;
         }
 
-        var currentMetricValue = Configuration
-        .Scope
-        .ExtractScopedMetrics(eventData.Metrics)
-        .Extract(Configuration.Metric.Type);
-
-        var compareResult = Configuration.Metric.Compare(Configuration.ReferenceValue, currentMetricValue);
-        var isYes = compareResult == Configuration.ChangeType;
+        var metricValue = eventData.Metrics.Extract(Configuration.ScopedMetricDefinition);
+        var compareResult = Configuration.ScopedMetricDefinition.Metric.Compare(Configuration.ReferenceValue, metricValue.Value);
+        var isYes = compareResult == Configuration.ExpectedComparisonResult;
         Settle(isYes ? YesOutcome.Id : NoOutcome.Id);
 
         return SettlementAttemptStatus.Completed;

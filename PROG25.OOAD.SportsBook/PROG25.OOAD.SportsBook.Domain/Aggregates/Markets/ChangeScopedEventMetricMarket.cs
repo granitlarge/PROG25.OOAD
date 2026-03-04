@@ -6,10 +6,9 @@ using PROG25.OOAD.SportsBook.Domain.ValueObjects.MarketConfigurations;
 namespace PROG25.OOAD.SportsBook.Domain.Aggregates.Markets;
 
 /// <summary>
-/// Market that settles based on whether a specified scoped metric is equal to an expected value at the time of settlement.
-/// For example, this could be used to create a market that settles YES if a team's total goals at the end of the match are equal to a specified value, and NO otherwise.
+/// Market that settles based on whether a specified scoped metric has changed (or not changed) in a certain way compared to a reference value at the time of settlement.
 /// </summary>
-public static class ExactEventMetricMarket
+public static class ChangeScopedEventMetricMarket
 {
     public static ComparisonScopedEventMetricMarket Create
     (
@@ -17,11 +16,11 @@ public static class ExactEventMetricMarket
         EventData eventData,
         YesNoOutcome yesOutcome,
         YesNoOutcome noOutcome,
-        ExactScopedEventMetricMarketConfiguration configuration
+        ChangeScopedEventMetricMarketConfiguration configuration
     )
     {
         var config = new ComparisonScopedEventMetricMarketConfiguration
-        (configuration.ExpectedValue, configuration.ScopedMetricDefinition, configuration.Timestamp, ComparisonResult.Equal, configuration.Name);
+        (configuration.ReferenceValue, configuration.ScopedMetricDefinition, configuration.Timestamp, configuration.ChangeType, configuration.Name);
         return new ComparisonScopedEventMetricMarket(eventId, eventData, yesOutcome, noOutcome, config);
     }
 }

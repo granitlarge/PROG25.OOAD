@@ -16,12 +16,11 @@ public class OverUnderEventMetricMarket : ScopedEventMetricMarket
     (
         EventId eventId,
         EventData eventData,
-        ISet<(TeamId, PlayerId)> teamPlayerPairs,
         OverUnderOutcome overOutcome,
         OverUnderOutcome underOutcome,
         OverUnderOutcome pushOutcome,
-        OverUnderEventMetricMarketConfiguration configuration
-    ) : base(eventId, eventData, teamPlayerPairs, new HashSet<Outcome> { overOutcome, underOutcome, pushOutcome }, configuration)
+        OverUnderScopedEventMetricMarketConfiguration configuration
+    ) : base(eventId, eventData, configuration, new HashSet<Outcome> { overOutcome, underOutcome, pushOutcome })
     {
         if (overOutcome.Type != OverUnderOutcomeType.Over)
         {
@@ -46,7 +45,7 @@ public class OverUnderEventMetricMarket : ScopedEventMetricMarket
     public OverUnderOutcome UnderOutcome { get; }
     public OverUnderOutcome PushOutcome { get; }
 
-    public override OverUnderEventMetricMarketConfiguration Configuration { get; }
+    public override OverUnderScopedEventMetricMarketConfiguration Configuration { get; }
 
     public override SettlementAttemptStatus Settle(EventData eventData)
     {
@@ -56,9 +55,8 @@ public class OverUnderEventMetricMarket : ScopedEventMetricMarket
             return settlementAttemptStatus; // if the base settle method changed the status, we should not proceed with settling this bet
         }
 
-        var scopeState = Configuration.Scope.ExtractScopedMetrics(eventData.Metrics);
-        var actualMetricValue = scopeState.Extract(Configuration.Metric.Type);
-        var compareResult = Configuration.Metric.Compare(actualMetricValue, Configuration.Threshold);
+        var metricValue = eventData.Metrics.Extract(Configuration.ScopedMetricDefinition);
+        var compareResult = Configuration.ScopedMetricDefinition.Metric.Compare(metricValue.Value, Configuration.Threshold);
 
         var winningOutcomeId = compareResult switch
         {
@@ -71,5 +69,52 @@ public class OverUnderEventMetricMarket : ScopedEventMetricMarket
         Settle(winningOutcomeId);
 
         return SettlementAttemptStatus.Completed;
+    }
+
+    internal static (ComparisonScopedEventMetricMarket Over, ComparisonScopedEventMetricMarket Under) Create
+    (
+        EventId eventId,
+        EventData eventData,
+        OverUnderOutcome overOutcome,
+        OverUnderOutcome underOutcome,
+        OverUnderOutcome pushOutcome,
+        OverUnderScopedEventMetricMarketConfiguration configuration
+    )
+    {
+        var overMarket = new ComparisonScopedEventMetricMarket
+        (
+            eventId,
+            eventData,
+            new YesNoOutcome(overOutcome.Odds, true),
+#warning This is a simplification - in a real implementation, we would likely want to calculate the push odds in a more sophisticated way to ensure that the market is balanced and does not allow for arbitrage opportunities. 
+#warning For example, we might want to set the push odds such that the expected value of a bet on over or under is the same, taking into account the probabilities of each outcome and the odds offered.
+            new YesNoOutcome(pushOutcome.Odds < underOutcome.Odds ? pushOutcome.Odds : underOutcome.Odds, false),
+            new ComparisonScopedEventMetricMarketConfiguration
+            (
+                configuration.Threshold,
+                configuration.ScopedMetricDefinition,
+                configuration.Timestamp,
+                ComparisonResult.GreaterThan,
+                "Over Market"
+            )
+        );
+
+        var underMarket = new ComparisonScopedEventMetricMarket
+        (
+            eventId,
+            eventData,
+            new YesNoOutcome(underOutcome.Odds, true),
+            new YesNoOutcome(pushOutcome.Odds < overOutcome.Odds ? pushOutcome.Odds : overOutcome.Odds, false),
+            new ComparisonScopedEventMetricMarketConfiguration
+            (
+                configuration.Threshold,
+                configuration.ScopedMetricDefinition,
+                configuration.Timestamp,
+                ComparisonResult.LessThan,
+                "Under Market"
+            )
+        );
+
+        return (overMarket, underMarket);
     }
 }

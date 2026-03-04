@@ -1,4 +1,4 @@
-namespace PROG25.OOAD.SportsBook.Domain.ValueObjects;
+namespace PROG25.OOAD.SportsBook.Domain.ValueObjects.Odds;
 
 public record Odds
 {
@@ -15,5 +15,15 @@ public record Odds
     public static Odds operator *(Odds a, Odds b)
     {
         return new Odds(a.Value * b.Value);
+    }
+
+    public static bool operator <(Odds a, Odds b)
+    {
+        return a.Value < b.Value;
+    }
+
+    public static bool operator >(Odds a, Odds b)
+    {
+        return a.Value > b.Value;
     }
 }

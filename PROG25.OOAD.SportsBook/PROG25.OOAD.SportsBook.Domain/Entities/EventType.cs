@@ -1,5 +1,5 @@
 using PROG25.OOAD.SportsBook.Domain.ValueObjects;
-using PROG25.OOAD.SportsBook.Domain.ValueObjects.Metrics;
+using PROG25.OOAD.SportsBook.Domain.ValueObjects.Metrics.Definitions;
 using PROG25.OOAD.SportsBook.Domain.ValueObjects.Scopes;
 
 namespace PROG25.OOAD.SportsBook.Domain.Entities;
@@ -9,25 +9,23 @@ public class EventType
     public EventType
     (
         ValueObjects.EventType eventType,
-        Metric metricThatDeterminesWinner,
-        ScopeType scopeTypeThatDeterminesWinner,
+        MetricDefinition scopedMetricThatDeterminesWinner,
         OptimumType optimumTypeThatDeterminesWinner,
-        ISet<(MetricType, ScopeType)> supportedMetricScopes,
+        ISet<MetricDefinition> supportedMetrics,
         ISet<Period> periods
     )
     {
         Id = new EventTypeId();
         Type = eventType;
-        MetricThatDeterminesWinner = metricThatDeterminesWinner;
-        ScopeTypeThatDeterminesWinner = scopeTypeThatDeterminesWinner;
+        MetricThatDeterminesWinner = scopedMetricThatDeterminesWinner;
         OptimumTypeThatDeterminesWinner = optimumTypeThatDeterminesWinner;
 
-        if (!supportedMetricScopes.Contains((metricThatDeterminesWinner.Type, scopeTypeThatDeterminesWinner)))
+        if (!supportedMetrics.Contains(scopedMetricThatDeterminesWinner))
         {
             throw new ArgumentException("The supported metric scopes must include the metric and scope that determine the winner.");
         }
 
-        SupportedMetricScopes = supportedMetricScopes;
+        SupportedMetrics = supportedMetrics;
         Periods = periods;
     }
 
@@ -35,7 +33,7 @@ public class EventType
 
     public ValueObjects.EventType Type { get; }
 
-    public ISet<(MetricType, ScopeType)> SupportedMetricScopes { get; }
+    public ISet<MetricDefinition> SupportedMetrics { get; }
 
     /// <summary>
     /// This is the metric that determines the winner of the event. 
@@ -44,7 +42,7 @@ public class EventType
     /// In a tennis match, it might be "Games Won". 
     /// This metric is crucial for determining the outcome of bets placed on the event.
     /// </summary>
-    public Metric MetricThatDeterminesWinner { get; }
+    public MetricDefinition MetricThatDeterminesWinner { get; }
 
     // <summary>
     /// This indicates the scope of the metric that determines the winner. 

@@ -1,19 +1,23 @@
-using PROG25.OOAD.SportsBook.Domain.ValueObjects.Metrics;
+using PROG25.OOAD.SportsBook.Domain.ValueObjects.Metrics.Definitions;
 using PROG25.OOAD.SportsBook.Domain.ValueObjects.Timestamps.Abstractions;
 
 namespace PROG25.OOAD.SportsBook.Domain.ValueObjects.MarketConfigurations.Abstractions;
 
-public abstract record EventMetricMarketConfiguration : MarketConfiguration
+public abstract record EventMetricMarketConfiguration
 {
-    public EventMetricMarketConfiguration
-    (
-        Metric metric,
-        EventDataTimestamp timestamp,
-        string name
-    ) : base(timestamp, name)
+    public EventMetricMarketConfiguration(MetricDefinition metric, EventDataTimestamp timestamp, string name)
     {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            throw new ArgumentException("Market name cannot be null or empty.", nameof(name));
+        }
+
         Metric = metric;
+        Name = name.Trim();
+        Timestamp = timestamp;
     }
 
-    public Metric Metric { get; }
+    public MetricDefinition Metric { get; }
+    public string Name { get; }
+    public EventDataTimestamp Timestamp { get; }
 }

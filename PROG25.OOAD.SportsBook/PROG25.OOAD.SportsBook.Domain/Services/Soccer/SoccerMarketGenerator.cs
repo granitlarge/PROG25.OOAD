@@ -18,35 +18,35 @@ internal class SoccerMarketGenerator
         _oddsCalculator = oddsCalculator;
     }
 
-    internal List<Market> GenerateSoccerMarkets(SoccerMatchEvent @event)
+    internal List<EventMetricMarket> GenerateSoccerMarkets(SoccerMatchEvent @event)
     {
         return GenerateTeamScopedMarkets(@event);
     }
 
-    private List<Market> GenerateTeamScopedMarkets(SoccerMatchEvent @event)
+    private List<EventMetricMarket> GenerateTeamScopedMarkets(SoccerMatchEvent @event)
     {
         var fullTimeResultMarkets = GenerateTeamScopedFullTimeMarkets(@event);
         return fullTimeResultMarkets;
     }
 
-    private List<Market> GenerateTeamScopedFullTimeMarkets(SoccerMatchEvent @event)
+    private List<EventMetricMarket> GenerateTeamScopedFullTimeMarkets(SoccerMatchEvent @event)
     {
         return GenerateTeamFullTimeResultMarkets(@event);
     }
 
-    private List<Market> GenerateTeamFullTimeResultMarkets(SoccerMatchEvent @event)
+    private List<EventMetricMarket> GenerateTeamFullTimeResultMarkets(SoccerMatchEvent @event)
     {
-        var drawWinnerMarketConfig = new EqualScopedEventMetricMarketConfiguration
+        var drawWinnerMarketConfig = new EqualScopeEventMetricMetricMarketConfiguration
         (
-            ReferenceValueBasedMetric.NonNegativePoints,
             ScopeType.Team,
+            SoccerMetrics.Goals,
             EventStatusChangedTimestamp.ForStatus(EventStatus.Finished),
             "Draw"
         );
 
         var (yes, no) = _oddsCalculator.CalculateYesNoOutcomes(drawWinnerMarketConfig, @event.Data);
 
-        var markets = new List<Market>
+        var markets = new List<EventMetricMarket>
         {
             GenerateWinnerMarket(@event.HomeTeam.Id),
             GenerateWinnerMarket(@event.AwayTeam.Id),
@@ -62,12 +62,11 @@ internal class SoccerMarketGenerator
 
         OptimalEventMetricMarket GenerateWinnerMarket(TeamId teamId)
         {
-            var config = new OptimalEventMetricMarketConfiguration
+            var config = new OptimalScopedEventMetricMarketConfiguration
             (
-                ReferenceValueBasedMetric.NonNegativePoints,
-                new TeamScope(teamId),
+                SoccerMetrics.GetTeamScopedMetrics(teamId).First(m => m.Metric == SoccerMetrics.Goals),
                 EventStatusChangedTimestamp.ForStatus(EventStatus.Finished),
-                $"{teamId} to Win",
+                $"Winner {teamId}",
                 OptimumType.Maximum
             );
 
@@ -75,12 +74,11 @@ internal class SoccerMarketGenerator
             return @event.CreateMarket(yes, no, config);
         }
 
-        List<Market> GenerateOverUnderTotalGoalsMarket(TeamId teamId, decimal threshold, SoccerMatchEvent @event)
+        List<EventMetricMarket> GenerateOverUnderTotalGoalsMarket(TeamId teamId, decimal threshold, SoccerMatchEvent @event)
         {
-            var config = new OverUnderEventMetricMarketConfiguration
+            var config = new OverUnderScopedEventMetricMarketConfiguration
             (
-                ReferenceValueBasedMetric.NonNegativePoints,
-                new TeamScope(teamId),
+                SoccerMetrics.GetTeamScopedMetrics(teamId).First(m => m.Metric == SoccerMetrics.Goals),
                 EventStatusChangedTimestamp.ForStatus(EventStatus.Finished),
                 $"Over {threshold} Points for {teamId}",
                 threshold

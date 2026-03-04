@@ -1,6 +1,5 @@
 using PROG25.OOAD.SportsBook.Domain.ValueObjects.Events;
-using PROG25.OOAD.SportsBook.Domain.ValueObjects.Metrics;
-using PROG25.OOAD.SportsBook.Domain.ValueObjects.Scopes;
+using PROG25.OOAD.SportsBook.Domain.ValueObjects.Metrics.Definitions;
 using PROG25.OOAD.SportsBook.Domain.ValueObjects.Timestamps.Abstractions;
 
 namespace PROG25.OOAD.SportsBook.Domain.ValueObjects.Timestamps;
@@ -9,17 +8,16 @@ public record EventMetricChangedComparedToThresholdTimestamp : EventDataTimestam
 {
     public EventMetricChangedComparedToThresholdTimestamp
     (
-        Metric metric,
-        Scope scope,
+        ScopedMetricDefinition scopedMetricDefinition,
         decimal threshold,
         ComparisonResult comparisonResult
     )
         : base(EventDataTimestampType.EventData)
     {
 
-        if (!metric.IsValidMetricValue(threshold))
+        if (!scopedMetricDefinition.Metric.IsValidMetricValue(threshold))
         {
-            throw new ArgumentOutOfRangeException(nameof(threshold), $"Threshold value {threshold} is not valid for metric {metric.Type}.");
+            throw new ArgumentOutOfRangeException(nameof(threshold), $"Threshold value {threshold} is not valid for metric {scopedMetricDefinition.Metric.Name}.");
         }
 
         if (comparisonResult == ComparisonResult.Equal)
@@ -28,31 +26,23 @@ public record EventMetricChangedComparedToThresholdTimestamp : EventDataTimestam
         }
 
         ExpectedComparisonResult = comparisonResult;
-        Metric = metric;
-        Scope = scope;
+        ScopedMetricDefinition = scopedMetricDefinition;
         Threshold = threshold;
     }
 
-    public Metric Metric { get; }
-    public Scope Scope { get; }
+    public ScopedMetricDefinition ScopedMetricDefinition { get; }
     public ComparisonResult ExpectedComparisonResult { get; }
     public decimal Threshold { get; }
 
     public override bool HasOccurred(EventData currentEventData)
     {
-        var metricValue = Scope.Type switch
-        {
-            ScopeType.Event => currentEventData.Metrics.ExtractEventScope().Extract(Metric.Type),
-            ScopeType.Team => Scope.ExtractScopedMetrics(currentEventData.Metrics).Extract(Metric.Type),
-            ScopeType.Player => Scope.ExtractScopedMetrics(currentEventData.Metrics).Extract(Metric.Type),
-            _ => throw new NotImplementedException()
-        };
-        return IsExceeded(metricValue);
+        var metricValue = currentEventData.Metrics.Extract(ScopedMetricDefinition);
+        return IsExceeded(metricValue.Value);
     }
 
     private bool IsExceeded(decimal metricValue)
     {
-        var result = Metric.Compare(metricValue, Threshold);
+        var result = ScopedMetricDefinition.Metric.Compare(metricValue, Threshold);
         return result != ComparisonResult.Equal && ExpectedComparisonResult == result;
     }
 }

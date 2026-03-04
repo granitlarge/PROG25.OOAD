@@ -16,11 +16,10 @@ public class OptimalEventMetricMarket : ScopedEventMetricMarket
     (
         EventId eventId,
         EventData eventData,
-        ISet<(TeamId, PlayerId)> eventTeamPlayerPairs,
         YesNoOutcome yesOutcome,
         YesNoOutcome noOutcome,
-        OptimalEventMetricMarketConfiguration configuration
-    ) : base(eventId, eventData, eventTeamPlayerPairs, new HashSet<Outcome> { yesOutcome, noOutcome }, configuration)
+        OptimalScopedEventMetricMarketConfiguration configuration
+    ) : base(eventId, eventData, configuration, new HashSet<Outcome> { yesOutcome, noOutcome })
     {
         if (!yesOutcome.IsYes)
         {
@@ -39,7 +38,7 @@ public class OptimalEventMetricMarket : ScopedEventMetricMarket
 
     public YesNoOutcome YesOutcome { get; }
     public YesNoOutcome NoOutcome { get; }
-    public override OptimalEventMetricMarketConfiguration Configuration { get; }
+    public override OptimalScopedEventMetricMarketConfiguration Configuration { get; }
 
     public override SettlementAttemptStatus Settle(EventData eventData)
     {
@@ -49,22 +48,19 @@ public class OptimalEventMetricMarket : ScopedEventMetricMarket
             return settlementAttemptStatus;
         }
 
-        var winnerScopedMatchState = Configuration.Scope.ExtractScopedMetrics(eventData.Metrics);
-        var allScopedMatchStatesExceptWinner = eventData.Metrics.ExtractAllScopes(Configuration.Scope.Type)
-        .Where(scope => scope.Id != winnerScopedMatchState.Id);
+        var specificMetric = eventData.Metrics.Extract(Configuration.ScopedMetricDefinition);
+        var allMetricInScopeExceptSpecificMetric = eventData.Metrics
+        .ExtractAll(Configuration.ScopedMetricDefinition.Scope.Type, Configuration.ScopedMetricDefinition.Metric)
+        .Where(mv => mv != specificMetric);
 
-        var winnerMetricValue = winnerScopedMatchState.Extract(Configuration.Metric.Type);
-        var otherMetricValues = allScopedMatchStatesExceptWinner.Select(scope => scope.Extract(Configuration.Metric.Type));
-
-        var isOptimum = Configuration.OptimumType switch
+        var isOptimal = Configuration.OptimumType switch
         {
-            OptimumType.Maximum => winnerMetricValue > otherMetricValues.Max(),
-            OptimumType.Minimum => winnerMetricValue < otherMetricValues.Min(),
-            _ => throw new NotSupportedException($"Optimum type {Configuration.OptimumType} is not supported."),
+            OptimumType.Maximum => allMetricInScopeExceptSpecificMetric.Max()!.Value < specificMetric.Value,
+            OptimumType.Minimum => allMetricInScopeExceptSpecificMetric.Min()!.Value > specificMetric.Value,
+            _ => throw new InvalidOperationException("Unsupported optimality type.")
         };
 
-        var winningOutComeId = isOptimum ? YesOutcome.Id : NoOutcome.Id;
-        Settle(winningOutComeId);
+        Settle(isOptimal ? YesOutcome.Id : NoOutcome.Id);
         return SettlementAttemptStatus.Completed;
     }
 

@@ -11,14 +11,18 @@ public abstract class ScopedEventMetricMarket : EventMetricMarket
     (
         EventId eventId,
         EventData eventData,
-        ISet<(TeamId, PlayerId)> teamPlayerPairs,
-        ISet<Outcome> outcomes,
-        ScopedEventMetricMarketConfiguration configuration
-    ) : base(eventId, eventData, configuration, outcomes)
+        ScopedEventMetricMarketConfiguration configuration,
+        ISet<Outcome> outcomes
+    ) : base(eventId, configuration, outcomes)
     {
-        if (!configuration.Scope.IsValidForEventParticipans(teamPlayerPairs))
+        if (configuration.Timestamp.HasOccurred(eventData))
         {
-            throw new InvalidOperationException("The event statistics do not satisfy the market's scope requirements.");
+            throw new InvalidOperationException("Cannot create an event metric market for an event that has already passed the market's timestamp");
+        }
+
+        if (!eventData.Metrics.IsSupportedMetric(configuration.Metric))
+        {
+            throw new InvalidOperationException($"The event does not support the metric {configuration.Metric.Name} required by the market configuration.");
         }
 
         Configuration = configuration;
