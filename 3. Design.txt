@@ -1,0 +1,132 @@
+Domänen
+-------
+
+# Entiteter
+
+* Game(id, name)
+* Customer(id, firstName, lastName, identificationNumber, email, account)
+* Account(id, customerId, balance)
+* Transaction(id, accountId, amount)
+* MatchType(id, name)
+* Match(id, matchTypeId, name, startDate)
+
+* Match->SoccerMatch(id, homeTeamName, visitingTeamName, location)
+* Match->BasketballMatch(id, homeTeamName, visitingTeamName, location)
+
+* EventType
+* MatchEvent(id, matchId, eventType, timestamp)
+* MatchEvent -> MatchStartedEvent()
+* MatchEvent -> GoalScoredEvent(scoringTeam, scoringPlayer)
+* MatchEvent -> PenaltyAwardedEvent(toTeam)
+* .
+* .
+* .
+* MatchEvent-> MatchEndedEvent
+
+* MarketType(id, name): En typ av vad t.ex. "vilket lag vinner?", "vilket lag gör nästa mål?"
+* MatchTypeMarketType(id, marketTypeId, matchTypeId): Beskriver vilka vad som kan slås på vilka typer av event - t.ex. så kan vadet "vem förlorar sin drottning först" slås på en schackmatch men inte på en fotbollsmatch.
+  Många vad kan dock beskrivas på ett sätt som gör dem återanvändbara t.ex. "vem blir föremål för nästa utvisning" istället för "vem får nästa röda kort".
+
+* Market(id, marketTypeId, eventId): beskriver att ett visst vad är aktivt på ett visst event
+* Outcome(id, marketId, name, odds): ett utfall för ett vad på ett visst event
+* Bet(id, outcomeId, customerId, stake, odds): ett bet på ett vad för ett visst event
+
+* Team(id, name)
+* Player(id, name)
+
+## Hur modellerar vi events?
+
+* Vi måste veta namnet på eventet
+* Vi måste veta vilken typ av event det är - fotbollsmatch, hockeymatch, presidentval etc.
+* Vi måste veta vilka typer av händelser som kan ske i eventet - avspark, nedsläpp, mål, gult kort, slagsmål etc.
+* Vi måste kunna beskriva händelser - vem gjorde mål, i vilken minut gjorde de mål, var det ett voleymåll? var det ett självmål?
+
+En lösning på detta är följande entiteter:
+
+* EventType(id, name): typ av event - fotbollsmatch, hockeymatch, presidentval
+* EventTypeProperty(eventId, name): information om eventet - var det hålls, när det börjar etc.
+* EventTypeOccurrence(id, eventTypeId, name): händelser som kan ske i eventet - avspark, mål, straff, gult kort, slagsmål etc.
+* EventTypeOccurenceProperty(id, eventTypeOccurrenceId, name): information som breskriver en händelse i ett event - vem gjorde målet, i vilken minut, var det ett volleymål etc.
+* Event(id, eventTypeId, name): en specifik händelse av en viss typ - en fotbollsmatch mellan Juventus & Inter.
+* EventProperty(id, eventId, eventTypePropertyId, value): information om händelsen - t.ex. när och var matchen hålls
+* EventOccurrence(id, eventId, eventTypeOccurrenceId): händelser i ett specifikt event - avspark mellan Juventus & Inter, mål i Juventus & Inter matchen, 
+* EventOccurenceProperty(id, eventOccurenceId, eventTypeOccurencePropertyId, value): information som beskriver en specifik händelse i ett specifikt event - vem gjorde mål? Zlatan, i vilken minut? 73:e,
+
+Fördelar: färre entiteter
+Nackdelar: svårt att veta vilka properties en entitet har (man måste kolla i datat), ingen typsäkerhet
+
+Ett annat alternativ är följande entiter:
+
+* EventType(id, name)
+* Event(id, eventTypeId, name, startDate)
+* Event->SoccerMatch(id, team A, team B, location)
+* Occurrence-> (id, timestamp)
+* SockerMatchOccurence(id, sockerMatchId, timestamp)
+* SockerMatchOccurence->SoccerMatchStarted(id, soccerMatchId)
+* SockerMatchOccurence->SoccerMatchGoal(id, soccerMatchId, team, player)
+* SockerMatchOccurence->SoccerMatchYellowCard(id, soccerMatchId, team, player)
+* SockerMatchOccurence->SoccerMatchRedCard(id, soccerMatchId, team, player)
+* SockerMatchOccurence->SoccerMatchEnded(id, soccerMatchId)
+
+Fördelar: tydligt
+Nackdelar: många entiteter men man kan dela upp det i moduler
+
+Frågan är följande: ska vi ha många entiteter med hög detaljnivå/låg abstraktionsnivå eller få entiteter med låg detaljnivå/hög abstraktionsnivå?
+
+* Vi kommer ta emot information i form av events från en matcheventleveratör.
+* Dessa kommer behöva mappas till en domänmodel. Om vi har många domänmodeller så blir det mycket mappning. Om vi har få domänmodeller så blir det lite mappning.
+  Om vi har många domänmodeller så kommer många av dem innehålla duplicerade fält.
+* Efter att mappningen är klar kommer vi behöva bestämma vilka vad det är som har avgjorts av händelsen: SettleBets(Event). Det blir en funktion per domänmodell. Många/få domänmodeller -> många/få funktioner.
+  Om vi har en domänmodell så kommer vi ha en funktion, den kommer i sin tur vara uppdelad i mindre funktioner t.ex. SettlePointScoredBets(Event), SettleMatchEndedBets(Event) eller
+  SettleSoccerMatchBets(Event), SettleHockeyMatchBets(Event).
+  Om vi har flera domänmodeller så blir det flera funktioner: SettleBets(PointScoredEvent), SettleBets(MatchEndedEvent)
+  I båda fallen kommer vi dela upp koden i flera funktioner/klasser baserat på eventtyp, sport, någon kategori helt enkelt.
+
+Sammanfattning:
+
+* Specifika domänmodeller för varje event -> kodduplicering, många mappningsfunktioner, en funktion SettleBets(SpecificEvent) per event d.v.s.
+  PointScoredEventMapper(PointScoredEvent) som sedan bryts ned i ytterligare funktioner/klasser "SettleNextGoalWager(matchId, scoringTeamId), SettleNextGoalStrikeType(matchId, strikeType)"
+* En domänmodell för alla event -> en funktion för domänmodellen, ytterligare en funktion per event som settlas av eventet: SettlePointScoredEvent(matchId, scoringTeamId, scoringPlayerId, scoringMinute),  
+  sen hanterar vi alla vad av samma typ separat i den funktionen: SettleNextGoalWager(matchId, scoringTeamId). Nackdelen med denna lösning är att det inte framgår vilka fält som tillhör eventet. Det är en dealbreaker.
+
+Vi kör på en domänmodell för varje event. Single-responsibility principle agrees.
+
+## Hur modellerar vi vad?
+
+Vi måste veta:
+
+* Vilket event vadet tillhör
+* Namn på vadet
+* Vadets utfall & utfallens odds
+* Vadets status (öppet, stängt, utbetalt)
+* Vem som har placerat en insats på vilket utfall
+* Vilken typ av vad det är (vem vinner matchen? vem gör nästa mål? hur många hörnor blir det i första halvlek)
+
+En lösning är följande:
+
+* Wager(id, eventId, wagerTypeId, name)
+* WagerOutcome(id, betId, name, odds)
+* Bet(id, wagerOutcome, customerId, amount)
+
+En annan lösning är följande:
+
+* Wager(id, name): En typ av vad t.ex. "vilket lag vinner?", "vilket lag gör nästa mål?"
+* EventTypeWager(id, wagerId, eventTypeId): Beskriver vilka vad som kan slås på vilka typer av event - t.ex. så kan vadet "vem förlorar sin drottning först" slås på en schackmatch men inte på en fotbollsmatch.
+  Många vad kan dock beskrivas på ett sätt som gör dem återanvändbara e.g. "vem blir föremål för nästa utvisning" istället för "vem får nästa röda kort".
+
+* EventWager(id, wagerId, eventId): beskriver att ett visst vad är aktivt på ett visst event
+* EventWagerOutcome(id, eventWagerId, name, odds): ett utfall för ett vad på ett visst event
+* Bet(id, eventWagerOutcomeId, customerId, stake, odds): ett bet på ett vad för ett visst event
+
+Efter snack med ChatGPT så döper vi om saker och ting korrekt:
+
+* Wager -> MarketType(id, name)
+* MatchWager -> Market
+* MatchWagerOutcome -> Outcome
+* Bet -> Bet
+
+# Value objects
+
+* IdentificationNumber
+* Email
+* Location

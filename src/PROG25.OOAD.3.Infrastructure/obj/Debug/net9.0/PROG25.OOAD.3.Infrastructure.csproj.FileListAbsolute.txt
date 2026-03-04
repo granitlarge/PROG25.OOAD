@@ -1,0 +1,11 @@
+c:\Users\Miro\source\repos\PROG25.OOAD\src\PROG25.OOAD.3.Infrastructure\bin\Debug\net9.0\PROG25.OOAD.3.Infrastructure.deps.json
+c:\Users\Miro\source\repos\PROG25.OOAD\src\PROG25.OOAD.3.Infrastructure\bin\Debug\net9.0\PROG25.OOAD.3.Infrastructure.dll
+c:\Users\Miro\source\repos\PROG25.OOAD\src\PROG25.OOAD.3.Infrastructure\bin\Debug\net9.0\PROG25.OOAD.3.Infrastructure.pdb
+c:\Users\Miro\source\repos\PROG25.OOAD\src\PROG25.OOAD.3.Infrastructure\obj\Debug\net9.0\PROG25.OOAD.3.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+c:\Users\Miro\source\repos\PROG25.OOAD\src\PROG25.OOAD.3.Infrastructure\obj\Debug\net9.0\PROG25.OOAD.3.Infrastructure.AssemblyInfoInputs.cache
+c:\Users\Miro\source\repos\PROG25.OOAD\src\PROG25.OOAD.3.Infrastructure\obj\Debug\net9.0\PROG25.OOAD.3.Infrastructure.AssemblyInfo.cs
+c:\Users\Miro\source\repos\PROG25.OOAD\src\PROG25.OOAD.3.Infrastructure\obj\Debug\net9.0\PROG25.OOAD.3.Infrastructure.csproj.CoreCompileInputs.cache
+c:\Users\Miro\source\repos\PROG25.OOAD\src\PROG25.OOAD.3.Infrastructure\obj\Debug\net9.0\PROG25.OOAD.3.Infrastructure.dll
+c:\Users\Miro\source\repos\PROG25.OOAD\src\PROG25.OOAD.3.Infrastructure\obj\Debug\net9.0\refint\PROG25.OOAD.3.Infrastructure.dll
+c:\Users\Miro\source\repos\PROG25.OOAD\src\PROG25.OOAD.3.Infrastructure\obj\Debug\net9.0\PROG25.OOAD.3.Infrastructure.pdb
+c:\Users\Miro\source\repos\PROG25.OOAD\src\PROG25.OOAD.3.Infrastructure\obj\Debug\net9.0\ref\PROG25.OOAD.3.Infrastructure.dll
