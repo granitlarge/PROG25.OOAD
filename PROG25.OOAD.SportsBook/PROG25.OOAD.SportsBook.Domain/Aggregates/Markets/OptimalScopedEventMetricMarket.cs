@@ -9,10 +9,11 @@ namespace PROG25.OOAD.SportsBook.Domain.Aggregates.Markets;
 /// <summary>
 /// Market that settles based on whether a specified scoped metric is the optimal value (e.g. maximum or minimum) among all scopes of a certain type at the time of settlement.
 /// For example, this could be used to create a market that settles YES if a team's total goals at the end of the match are higher than both the other teams' total goals, and NO otherwise.
+/// I.e. it can be used to implement wins or losses.
 /// </summary>
-public class OptimalEventMetricMarket : ScopedEventMetricMarket
+public class OptimalScopedEventMetricMarket : ScopedEventMetricMarket
 {
-    internal OptimalEventMetricMarket
+    internal OptimalScopedEventMetricMarket
     (
         EventId eventId,
         EventData eventData,

@@ -38,9 +38,9 @@ public abstract class Event
         return new EqualScopeEventMetricMarket(Id, Data, yesOutcome, noOutcome, configuration);
     }
 
-    public OptimalEventMetricMarket CreateMarket(YesNoOutcome yesOutcome, YesNoOutcome noOutcome, OptimalScopedEventMetricMarketConfiguration configuration)
+    public OptimalScopedEventMetricMarket CreateMarket(YesNoOutcome yesOutcome, YesNoOutcome noOutcome, OptimalScopedEventMetricMarketConfiguration configuration)
     {
-        return new OptimalEventMetricMarket(Id, Data, yesOutcome, noOutcome, configuration);
+        return new OptimalScopedEventMetricMarket(Id, Data, yesOutcome, noOutcome, configuration);
     }
     public ComparisonScopedEventMetricMarket CreateMarket(YesNoOutcome yesOutcome, YesNoOutcome noOutcome, ComparisonScopedEventMetricMarketConfiguration configuration)
     {

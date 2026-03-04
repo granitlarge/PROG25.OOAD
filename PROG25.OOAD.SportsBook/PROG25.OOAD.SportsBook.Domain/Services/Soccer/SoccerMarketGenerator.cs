@@ -60,7 +60,7 @@ internal class SoccerMarketGenerator
 
         return markets;
 
-        OptimalEventMetricMarket GenerateWinnerMarket(TeamId teamId)
+        OptimalScopedEventMetricMarket GenerateWinnerMarket(TeamId teamId)
         {
             var config = new OptimalScopedEventMetricMarketConfiguration
             (
