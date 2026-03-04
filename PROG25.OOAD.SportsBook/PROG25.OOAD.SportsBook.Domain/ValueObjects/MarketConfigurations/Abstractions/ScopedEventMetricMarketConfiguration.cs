@@ -1,19 +1,25 @@
 using PROG25.OOAD.SportsBook.Domain.ValueObjects.Metrics.Definitions;
+using PROG25.OOAD.SportsBook.Domain.ValueObjects.Scopes;
 using PROG25.OOAD.SportsBook.Domain.ValueObjects.Timestamps.Abstractions;
 
 namespace PROG25.OOAD.SportsBook.Domain.ValueObjects.MarketConfigurations.Abstractions;
 
 public abstract record ScopedEventMetricMarketConfiguration : EventMetricMarketConfiguration
 {
-    public ScopedEventMetricMarketConfiguration(ScopedMetricDefinition scopedMetricDefinition, EventDataTimestamp timestamp, string name)
-        : base(scopedMetricDefinition.Metric, timestamp, name)
+    public ScopedEventMetricMarketConfiguration
+    (
+        Scope scope,
+        MetricDefinition metric,
+        EventDataTimestamp timestamp,
+        string name
+    ) : base(metric, timestamp, name)
     {
         if (string.IsNullOrWhiteSpace(name))
         {
             throw new ArgumentException("Market name cannot be null or empty.", nameof(name));
         }
-        ScopedMetricDefinition = scopedMetricDefinition;
+        Scope = scope;
     }
 
-    public ScopedMetricDefinition ScopedMetricDefinition {get;}
+    public Scope Scope { get; }
 }

@@ -32,7 +32,8 @@ public class OverUnderEventMetricMarket
             new ComparisonScopedEventMetricMarketConfiguration
             (
                 configuration.Threshold,
-                configuration.ScopedMetricDefinition,
+                configuration.Scope,
+                configuration.Metric,
                 configuration.Timestamp,
                 ComparisonResult.GreaterThan,
                 "Over Market"
@@ -48,7 +49,8 @@ public class OverUnderEventMetricMarket
             new ComparisonScopedEventMetricMarketConfiguration
             (
                 configuration.Threshold,
-                configuration.ScopedMetricDefinition,
+                configuration.Scope,
+                configuration.Metric,
                 configuration.Timestamp,
                 ComparisonResult.LessThan,
                 "Under Market"

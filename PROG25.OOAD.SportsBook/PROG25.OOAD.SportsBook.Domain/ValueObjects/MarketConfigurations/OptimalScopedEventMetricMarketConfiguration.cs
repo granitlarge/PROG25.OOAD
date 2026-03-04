@@ -9,14 +9,15 @@ public record OptimalScopedEventMetricMarketConfiguration : ScopedEventMetricMar
 {
     public OptimalScopedEventMetricMarketConfiguration
     (
-        ScopedMetricDefinition metric,
+                Scope scope,
+        MetricDefinition metric,
         EventDataTimestamp timestamp,
         string name,
         OptimumType optimumType
-    ) : base(metric, timestamp, name)
+    ) : base(scope, metric, timestamp, name)
     {
         OptimumType = optimumType;
-        if (metric.Scope.Type == ScopeType.Event)
+        if (Scope.Type == ScopeType.Event)
         {
             throw new ArgumentException("Scope type cannot be 'Event' for an optimal scoped metric market configuration.", nameof(metric));
         }

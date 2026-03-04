@@ -49,9 +49,9 @@ public class OptimalScopedEventMetricMarket : ScopedEventMetricMarket
             return settlementAttemptStatus;
         }
 
-        var specificMetric = eventData.Metrics.Extract(Configuration.ScopedMetricDefinition);
+        var specificMetric = eventData.Metrics.Extract(Configuration.Scope, Configuration.Metric);
         var allMetricInScopeExceptSpecificMetric = eventData.Metrics
-        .ExtractAll(Configuration.ScopedMetricDefinition.Scope.Type, Configuration.ScopedMetricDefinition.Metric)
+        .ExtractAll(Configuration.Scope.Type, Configuration.Metric)
         .Where(mv => mv != specificMetric);
 
         var isOptimal = Configuration.OptimumType switch

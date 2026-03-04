@@ -43,8 +43,8 @@ public class ComparisonScopedEventMetricMarket : ScopedEventMetricMarket
             return settlementAttemptStatus;
         }
 
-        var metricValue = eventData.Metrics.Extract(Configuration.ScopedMetricDefinition);
-        var compareResult = Configuration.ScopedMetricDefinition.Metric.Compare(Configuration.ReferenceValue, metricValue.Value);
+        var metricValue = eventData.Metrics.Extract(Configuration.Scope, Configuration.Metric);
+        var compareResult = Configuration.Metric.Compare(Configuration.ReferenceValue, metricValue.Value);
         var isYes = compareResult == Configuration.ExpectedComparisonResult;
         Settle(isYes ? YesOutcome.Id : NoOutcome.Id);
 

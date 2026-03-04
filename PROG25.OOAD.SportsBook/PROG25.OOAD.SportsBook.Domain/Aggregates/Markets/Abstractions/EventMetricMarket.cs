@@ -10,6 +10,8 @@ namespace PROG25.OOAD.SportsBook.Domain.Aggregates.Markets.Abstractions;
 
 public abstract class EventMetricMarket
 {
+    private readonly ImmutableHashSet<Outcome> _outcomes;
+
     protected EventMetricMarket
     (
         EventId eventId,
@@ -28,17 +30,18 @@ public abstract class EventMetricMarket
             throw new ArgumentException("The event does not support the metric required by the market configuration.", nameof(configuration));
         }
 
+        _outcomes = outcomes.ToImmutableHashSet();
+
         Id = new MarketId();
         EventId = eventId;
         Configuration = configuration;
-        Outcomes = outcomes.ToImmutableHashSet();
         Status = MarketStatus.Open;
     }
 
     public MarketId Id { get; }
     public EventId EventId { get; }
     public virtual EventMetricMarketConfiguration Configuration { get; }
-    public virtual ISet<Outcome> Outcomes { get; }
+    public virtual IReadOnlySet<Outcome> Outcomes => _outcomes;
     public OutcomeId? WinningOutcomeId { get; private set; }
     public MarketStatus Status { get; private set; }
 

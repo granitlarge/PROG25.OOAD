@@ -21,7 +21,7 @@ public static class ExactEventMetricMarket
     )
     {
         var config = new ComparisonScopedEventMetricMarketConfiguration
-        (configuration.ExpectedValue, configuration.ScopedMetricDefinition, configuration.Timestamp, ComparisonResult.Equal, configuration.Name);
+        (configuration.ExpectedValue, configuration.Scope, configuration.Metric, configuration.Timestamp, ComparisonResult.Equal, configuration.Name);
         return new ComparisonScopedEventMetricMarket(eventId, eventData, yesOutcome, noOutcome, config);
     }
 }

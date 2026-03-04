@@ -3,7 +3,7 @@ using PROG25.OOAD.SportsBook.Domain.ValueObjects.Metrics.Definitions;
 using PROG25.OOAD.SportsBook.Domain.ValueObjects.Scopes;
 using PROG25.OOAD.SportsBook.Domain.ValueObjects.Timestamps.Abstractions;
 
-namespace PROG25.OOAD.SportsBook.Domain.ValueObjects.MarketConfigurations;
+namespace PROG25.OOAD.SportsBook.Domain.ValueObjects.MarketConfigurations.Examples;
 
 public record OverUnderScopedEventMetricMarketConfiguration : ScopedEventMetricMarketConfiguration
 {

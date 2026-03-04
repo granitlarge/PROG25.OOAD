@@ -62,9 +62,11 @@ internal class SoccerMarketGenerator
 
         OptimalScopedEventMetricMarket GenerateWinnerMarket(TeamId teamId)
         {
+            var (scope, metric) = SoccerMetrics.GetTeamScopedMetrics(teamId).First(m => m.MetricDefinition == SoccerMetrics.Goals);
             var config = new OptimalScopedEventMetricMarketConfiguration
             (
-                SoccerMetrics.GetTeamScopedMetrics(teamId).First(m => m.Metric == SoccerMetrics.Goals),
+                scope,
+                metric,
                 EventStatusChangedTimestamp.ForStatus(EventStatus.Finished),
                 $"Winner {teamId}",
                 OptimumType.Maximum
@@ -76,10 +78,12 @@ internal class SoccerMarketGenerator
 
         List<EventMetricMarket> GenerateOverUnderTotalGoalsMarket(TeamId teamId, decimal threshold, SoccerMatchEvent @event)
         {
+            var (scope, metric) = SoccerMetrics.GetTeamScopedMetrics(teamId).First(m => m.MetricDefinition == SoccerMetrics.Goals);
             var config = new ComparisonScopedEventMetricMarketConfiguration
             (
                 threshold,
-                SoccerMetrics.GetTeamScopedMetrics(teamId).First(m => m.Metric == SoccerMetrics.Goals),
+                scope,
+                metric,
                 EventStatusChangedTimestamp.ForStatus(EventStatus.Finished),
                 ComparisonResult.GreaterThan,
                 $"Total Goals Over {threshold} for {teamId}"

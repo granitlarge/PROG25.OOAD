@@ -20,7 +20,7 @@ public static class ChangeScopedEventMetricMarket
     )
     {
         var config = new ComparisonScopedEventMetricMarketConfiguration
-        (configuration.ReferenceValue, configuration.ScopedMetricDefinition, configuration.Timestamp, configuration.ChangeType, configuration.Name);
+        (configuration.ReferenceValue, configuration.Scope, configuration.Metric, configuration.Timestamp, configuration.ChangeType, configuration.Name);
         return new ComparisonScopedEventMetricMarket(eventId, eventData, yesOutcome, noOutcome, config);
     }
 }

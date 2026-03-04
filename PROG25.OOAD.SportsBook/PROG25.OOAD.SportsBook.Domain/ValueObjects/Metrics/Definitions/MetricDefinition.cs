@@ -1,5 +1,3 @@
-using PROG25.OOAD.SportsBook.Domain.ValueObjects.Scopes;
-
 namespace PROG25.OOAD.SportsBook.Domain.ValueObjects.Metrics.Definitions;
 
 /// <summary>
@@ -46,5 +44,3 @@ public record MetricDefinition
         return FaultTolerance.Compare(firstValue, secondValue);
     }
 }
-
-public record ScopedMetricDefinition(Scope Scope, MetricDefinition Metric);

@@ -13,25 +13,25 @@ public record EventMetrics
         _metricValues = metricValues;
     }
 
-    public MetricValue Extract(ScopedMetricDefinition scopedMetricDefinition)
+    public MetricValue Extract(Scope scope, MetricDefinition metricDefinition)
     {
-        if (!IsSupportedMetric(scopedMetricDefinition.Metric))
+        if (!IsSupportedMetric(metricDefinition))
         {
-            throw new ArgumentException($"The metric '{scopedMetricDefinition.Metric.Name}' is not supported for this event.");
+            throw new ArgumentException($"The metric '{metricDefinition.Name}' is not supported for this event.");
         }
 
-        var metricValue = _metricValues.Single(mv => mv.Definition == scopedMetricDefinition);
+        var metricValue = _metricValues.Single(mv => mv.Metric == metricDefinition && mv.Scope == scope);
         return metricValue;
     }
 
     public List<MetricValue> ExtractAll(ScopeType scope, MetricDefinition metricDefinition)
     {
-        var metricValues = _metricValues.Where(mv => mv.Definition.Scope.Type == scope && mv.Definition.Metric == metricDefinition).ToList();
+        var metricValues = _metricValues.Where(mv => mv.Scope.Type == scope && mv.Metric == metricDefinition).ToList();
         return metricValues;
     }
 
     public bool IsSupportedMetric(MetricDefinition metric)
     {
-        return _metricValues.Any(mv => mv.Definition.Metric == metric);
+        return _metricValues.Any(mv => mv.Metric == metric);
     }
 }

@@ -1,5 +1,6 @@
 using PROG25.OOAD.SportsBook.Domain.ValueObjects.MarketConfigurations.Abstractions;
 using PROG25.OOAD.SportsBook.Domain.ValueObjects.Metrics.Definitions;
+using PROG25.OOAD.SportsBook.Domain.ValueObjects.Scopes;
 using PROG25.OOAD.SportsBook.Domain.ValueObjects.Timestamps.Abstractions;
 
 namespace PROG25.OOAD.SportsBook.Domain.ValueObjects.MarketConfigurations;
@@ -9,13 +10,14 @@ public record ComparisonScopedEventMetricMarketConfiguration : ScopedEventMetric
     public ComparisonScopedEventMetricMarketConfiguration
     (
         decimal referenceValue,
-        ScopedMetricDefinition scopedMetricDefinition,
+        Scope scope,
+        MetricDefinition metric,
         EventDataTimestamp timestamp,
         ComparisonResult expectedComparisonResult,
         string name
-    ) : base(scopedMetricDefinition, timestamp, name)
+    ) : base(scope, metric, timestamp, name)
     {
-        if (!scopedMetricDefinition.Metric.IsValidMetricValue(referenceValue))
+        if (!metric.IsValidMetricValue(referenceValue))
         {
             throw new ArgumentException("Reference value is not valid for the metric.", nameof(referenceValue));
         }

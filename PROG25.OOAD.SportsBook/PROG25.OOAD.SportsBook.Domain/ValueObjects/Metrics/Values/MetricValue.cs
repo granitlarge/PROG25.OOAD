@@ -1,20 +1,22 @@
 using PROG25.OOAD.SportsBook.Domain.ValueObjects.Metrics.Definitions;
+using PROG25.OOAD.SportsBook.Domain.ValueObjects.Scopes;
 
 namespace PROG25.OOAD.SportsBook.Domain.ValueObjects.Metrics.Values;
 
 public record MetricValue
 {
-    public MetricValue(ScopedMetricDefinition definition, decimal value)
+    public MetricValue(Scope scope, MetricDefinition metric, decimal value)
     {
-        if (!definition.Metric.IsValidMetricValue(value))
+        if (!metric.IsValidMetricValue(value))
         {
             throw new ArgumentException("Value is not valid for the given metric definition.", nameof(value));
         }
-
-        Definition = definition;
+        Scope = scope;
+        Metric = metric;
         Value = value;
     }
 
-    public ScopedMetricDefinition Definition { get; }
+    public Scope Scope { get; }
+    public MetricDefinition Metric { get; }
     public decimal Value { get; }
 }

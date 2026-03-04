@@ -11,16 +11,16 @@ public static class SoccerMetrics
     public static readonly MetricDefinition RedCards = new(0, decimal.MaxValue, FaultTolerance.Zero, "Red Cards");
     public static readonly MetricDefinition Corners = new(0, decimal.MaxValue, FaultTolerance.Zero, "Corners");
 
-    public static readonly ScopedMetricDefinition[] EventScopedMetrics = new[]
+    public static readonly (Scope Scope, MetricDefinition MetricDefinition)[] EventScopedMetrics = new[]
     {
         Goals,
         Assists,
         YellowCards,
         RedCards,
         Corners
-    }.Select(metric => new ScopedMetricDefinition(EventScope.Instance, metric)).ToArray();
+    }.Select(metric => ((Scope)EventScope.Instance, metric)).ToArray();
 
-    public static ScopedMetricDefinition[] GetPlayerScopedMetrics(PlayerId playerId)
+    public static (Scope Scope, MetricDefinition MetricDefinition)[] GetPlayerScopedMetrics(PlayerId playerId)
     {
         var scope = new PlayerScope(playerId);
         return new[]
@@ -30,10 +30,10 @@ public static class SoccerMetrics
             YellowCards,
             RedCards,
             Corners
-        }.Select(metric => new ScopedMetricDefinition(scope, metric)).ToArray();
+        }.Select(metric => ((Scope)scope, metric)).ToArray();
     }
 
-    public static ScopedMetricDefinition[] GetTeamScopedMetrics(TeamId teamId)
+    public static (Scope Scope, MetricDefinition MetricDefinition)[] GetTeamScopedMetrics(TeamId teamId)
     {
         var scope = new TeamScope(teamId);
         return new[]
@@ -43,6 +43,6 @@ public static class SoccerMetrics
             YellowCards,
             RedCards,
             Corners
-        }.Select(metric => new ScopedMetricDefinition(scope, metric)).ToArray();
+        }.Select(metric => ((Scope)scope, metric)).ToArray();
     }
 }
