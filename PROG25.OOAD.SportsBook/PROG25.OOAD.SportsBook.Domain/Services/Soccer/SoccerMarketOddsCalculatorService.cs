@@ -16,6 +16,7 @@ public class SoccerMarketOddsCalculatorService
             new YesNoOutcome(new Odds(1.9m), false)
         );
     }
+
     public (YesNoOutcome YesNoOutcome, YesNoOutcome NoOutcome) CalculateYesNoOutcomes(OptimalScopedEventMetricMarketConfiguration config, EventData eventData)
     {
         return
@@ -25,10 +26,12 @@ public class SoccerMarketOddsCalculatorService
         );
     }
 
-    public (OverUnderOutcome OverOutcome, OverUnderOutcome UnderOutcome, OverUnderOutcome PushOutcome) CalculateOverUnderOutcomes(OverUnderScopedEventMetricMarketConfiguration marketConfiguration, EventData eventData)
+    public (YesNoOutcome YesNoOutcome, YesNoOutcome NoOutcome) CalculateYesNoOutcomes(ComparisonScopedEventMetricMarketConfiguration config, EventData eventData)
     {
-        return (new OverUnderOutcome(OverUnderOutcomeType.Over, new Odds(1.8m)),
-                new OverUnderOutcome(OverUnderOutcomeType.Under, new Odds(1.9m)),
-                new OverUnderOutcome(OverUnderOutcomeType.Push, new Odds(1.0m)));
+        return
+        (
+            new YesNoOutcome(new Odds(1.8m), true),
+            new YesNoOutcome(new Odds(1.9m), false)
+        );
     }
 }

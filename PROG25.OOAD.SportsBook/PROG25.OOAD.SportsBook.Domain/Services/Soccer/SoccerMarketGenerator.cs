@@ -76,19 +76,20 @@ internal class SoccerMarketGenerator
 
         List<EventMetricMarket> GenerateOverUnderTotalGoalsMarket(TeamId teamId, decimal threshold, SoccerMatchEvent @event)
         {
-            var config = new OverUnderScopedEventMetricMarketConfiguration
+            var config = new ComparisonScopedEventMetricMarketConfiguration
             (
+                threshold,
                 SoccerMetrics.GetTeamScopedMetrics(teamId).First(m => m.Metric == SoccerMetrics.Goals),
                 EventStatusChangedTimestamp.ForStatus(EventStatus.Finished),
-                $"Over {threshold} Points for {teamId}",
-                threshold
+                ComparisonResult.GreaterThan,
+                $"Total Goals Over {threshold} for {teamId}"
             );
 
-            var (over, under, push) = _oddsCalculator.CalculateOverUnderOutcomes(config, @event.Data);
+            var (yes, no) = _oddsCalculator.CalculateYesNoOutcomes(config, @event.Data);
 
             return
             [
-                @event.CreateMarket( over, under, push , config),
+                @event.CreateMarket( yes, no, config),
             ];
         }
     }

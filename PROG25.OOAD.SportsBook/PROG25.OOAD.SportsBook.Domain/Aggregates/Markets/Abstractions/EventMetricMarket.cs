@@ -13,6 +13,7 @@ public abstract class EventMetricMarket
     protected EventMetricMarket
     (
         EventId eventId,
+        EventData eventData,
         EventMetricMarketConfiguration configuration,
         ISet<Outcome> outcomes
     )
@@ -20,6 +21,11 @@ public abstract class EventMetricMarket
         if (outcomes.Count < 2)
         {
             throw new ArgumentException("Market must have at least two outcomes.", nameof(outcomes));
+        }
+
+        if (!eventData.Metrics.IsSupportedMetric(configuration.Metric))
+        {
+            throw new ArgumentException("The event does not support the metric required by the market configuration.", nameof(configuration));
         }
 
         Id = new MarketId();

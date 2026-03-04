@@ -3,8 +3,6 @@ using PROG25.OOAD.SportsBook.Domain.Entities.Outcomes;
 using PROG25.OOAD.SportsBook.Domain.ValueObjects;
 using PROG25.OOAD.SportsBook.Domain.ValueObjects.Events;
 using PROG25.OOAD.SportsBook.Domain.ValueObjects.MarketConfigurations;
-using PROG25.OOAD.SportsBook.Domain.ValueObjects.Metrics.Values;
-using PROG25.OOAD.SportsBook.Domain.ValueObjects.Scopes;
 
 namespace PROG25.OOAD.SportsBook.Domain.Aggregates.Markets;
 
@@ -17,16 +15,18 @@ public class EqualScopeEventMetricMarket : EventMetricMarket
     internal EqualScopeEventMetricMarket
     (
         EventId eventId,
+        EventData eventData,
         YesNoOutcome yesOutcome,
         YesNoOutcome noOutcome,
         EqualScopeEventMetricMetricMarketConfiguration marketConfiguration
     )
-        : base(eventId, marketConfiguration, new HashSet<Outcome> { yesOutcome, noOutcome })
+        : base(eventId, eventData, marketConfiguration, new HashSet<Outcome> { yesOutcome, noOutcome })
     {
         if (!yesOutcome.IsYes)
         {
             throw new ArgumentException("yesOutcome must have IsYes set to true.", nameof(yesOutcome));
         }
+
         if (noOutcome.IsYes)
         {
             throw new ArgumentException("noOutcome must have IsYes set to false.", nameof(noOutcome));

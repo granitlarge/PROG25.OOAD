@@ -13,7 +13,7 @@ public abstract class ScopedEventMetricMarket : EventMetricMarket
         EventData eventData,
         ScopedEventMetricMarketConfiguration configuration,
         ISet<Outcome> outcomes
-    ) : base(eventId, configuration, outcomes)
+    ) : base(eventId, eventData, configuration, outcomes)
     {
         if (configuration.Timestamp.HasOccurred(eventData))
         {
