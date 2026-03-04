@@ -3,7 +3,7 @@ using PROG25.OOAD.SportsBook.Domain.ValueObjects;
 using PROG25.OOAD.SportsBook.Domain.ValueObjects.Events;
 using PROG25.OOAD.SportsBook.Domain.ValueObjects.MarketConfigurations;
 
-namespace PROG25.OOAD.SportsBook.Domain.Aggregates.Markets;
+namespace PROG25.OOAD.SportsBook.Domain.Aggregates.Markets.Examples;
 
 /// <summary>
 /// Market that settles based on whether a specified scoped metric has changed (or not changed) in a certain way compared to a reference value at the time of settlement.
