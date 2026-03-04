@@ -1,10 +1,10 @@
 using PROG25.OOAD.SportsBook.Domain.ValueObjects.Metrics;
 
-namespace PROG25.OOAD.SportsBook.Domain.ValueObjects.EventStates.Soccer;
+namespace PROG25.OOAD.SportsBook.Domain.ValueObjects.Events.Soccer;
 
-public record ScopedSoccerMatchEventState : ScopedEventStatistics
+public record ScopedSoccerMatchEventMetrics : ScopedEventMetrics
 {
-    public ScopedSoccerMatchEventState
+    public ScopedSoccerMatchEventMetrics
     (
         object scopeIdentifier,
         TimeSpan elapsedMatchTime,
@@ -40,7 +40,7 @@ public record ScopedSoccerMatchEventState : ScopedEventStatistics
             MetricType.Corners => Corners,
             MetricType.ElapsedMatchTimeSeconds => (decimal)ElapsedMatchTime.TotalSeconds,
             MetricType.ElapsedActualTimeSeconds => (decimal)ElapsedActualTime.TotalSeconds,
-            _ => throw new NotSupportedException($"Metric type {metricType} is not supported in ScopedSoccerMatchState."),
+            _ => throw new NotSupportedException($"Metric type {metricType} is not supported in ScopedSoccerMatchEventMetrics."),
         };
     }
 }

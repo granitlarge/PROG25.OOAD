@@ -12,7 +12,8 @@ public class EventType
         Metric metricThatDeterminesWinner,
         ScopeType scopeTypeThatDeterminesWinner,
         OptimumType optimumTypeThatDeterminesWinner,
-        ISet<(MetricType, ScopeType)> supportedMetricScopes
+        ISet<(MetricType, ScopeType)> supportedMetricScopes,
+        ISet<Period> periods
     )
     {
         Id = new EventTypeId();
@@ -27,6 +28,7 @@ public class EventType
         }
 
         SupportedMetricScopes = supportedMetricScopes;
+        Periods = periods;
     }
 
     public EventTypeId Id { get; }
@@ -56,4 +58,6 @@ public class EventType
     /// However, in some cases, a lower time is better (OptimumType.Minimum), such as in a race.
     /// </summary>
     public OptimumType OptimumTypeThatDeterminesWinner { get; }
+
+    public ISet<Period> Periods { get; }
 }

@@ -1,5 +1,4 @@
-using PROG25.OOAD.SportsBook.Domain.Aggregates.Events;
-using PROG25.OOAD.SportsBook.Domain.ValueObjects.EventStates;
+using PROG25.OOAD.SportsBook.Domain.ValueObjects.Events;
 
 namespace PROG25.OOAD.SportsBook.Domain.ValueObjects.Scopes;
 
@@ -12,6 +11,6 @@ public abstract record Scope
 
     public ScopeType Type { get; }
 
-    internal abstract ScopedEventStatistics ExtractScopedStatistics(EventStatistics state);
-    internal abstract bool IsValidForEvent(Event @event);
+    internal abstract ScopedEventMetrics ExtractScopedMetrics(EventMetrics state);
+    internal abstract bool IsValidForEventParticipans(ISet<(TeamId TeamId, PlayerId PlayerId)> teamPlayerPairs);
 }

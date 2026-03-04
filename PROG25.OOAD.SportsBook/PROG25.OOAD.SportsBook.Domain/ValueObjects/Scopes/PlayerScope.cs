@@ -1,5 +1,4 @@
-using PROG25.OOAD.SportsBook.Domain.Aggregates.Events;
-using PROG25.OOAD.SportsBook.Domain.ValueObjects.EventStates;
+using PROG25.OOAD.SportsBook.Domain.ValueObjects.Events;
 
 namespace PROG25.OOAD.SportsBook.Domain.ValueObjects.Scopes;
 
@@ -13,14 +12,13 @@ public record PlayerScope : Scope
 
     public PlayerId PlayerId { get; }
 
-    internal override ScopedEventStatistics ExtractScopedStatistics(EventStatistics state)
+    internal override ScopedEventMetrics ExtractScopedMetrics(EventMetrics state)
     {
         return state.ExtractPlayerScope(PlayerId);
     }
 
-    internal override bool IsValidForEvent(Event match)
+    internal override bool IsValidForEventParticipans(ISet<(TeamId TeamId, PlayerId PlayerId)> teamPlayerPairs)
     {
-        var hasPlayer = match.Teams.Any(team => team.Players.Any(player => player.Id == PlayerId));
-        return hasPlayer;
+        return teamPlayerPairs.Any(pair => pair.PlayerId == PlayerId);
     }
 }

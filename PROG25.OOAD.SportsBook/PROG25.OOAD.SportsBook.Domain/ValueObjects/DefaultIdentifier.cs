@@ -106,3 +106,9 @@ public record BetLegId : DefaultIdentifier
     public BetLegId(Guid value) : base(value) { }
     public BetLegId() : base() { }
 }
+
+public record PeriodId : DefaultIdentifier
+{
+    public PeriodId(Guid value) : base(value) { }
+    public PeriodId() : base() { }
+}

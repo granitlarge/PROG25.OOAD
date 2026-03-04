@@ -1,7 +1,7 @@
 using PROG25.OOAD.SportsBook.Domain.ValueObjects.MarketConfigurations.Abstractions;
 using PROG25.OOAD.SportsBook.Domain.ValueObjects.Metrics;
 using PROG25.OOAD.SportsBook.Domain.ValueObjects.Scopes;
-using PROG25.OOAD.SportsBook.Domain.ValueObjects.Timestamps;
+using PROG25.OOAD.SportsBook.Domain.ValueObjects.Timestamps.Abstractions;
 
 namespace PROG25.OOAD.SportsBook.Domain.ValueObjects.MarketConfigurations;
 
@@ -11,12 +11,12 @@ public record OverUnderEventMetricMarketConfiguration : ScopedEventMetricMarketC
     (
         Metric metric,
         Scope scope,
-        Timestamp timestamp,
+        EventDataTimestamp timestamp,
         string name,
-        ReferenceValueDecimalComparer threshold
+        decimal threshold
     ) : base(metric, scope, timestamp, name)
     {
-        if (!metric.IsValidMetricValue(threshold.ReferenceValue))
+        if (!metric.IsValidMetricValue(threshold))
         {
             throw new ArgumentException("Invalid threshold value for the given metric.", nameof(threshold));
         }
@@ -24,5 +24,5 @@ public record OverUnderEventMetricMarketConfiguration : ScopedEventMetricMarketC
         Threshold = threshold;
     }
 
-    public ReferenceValueDecimalComparer Threshold { get; }
+    public decimal Threshold { get; }
 }

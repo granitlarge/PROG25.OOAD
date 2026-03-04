@@ -6,7 +6,7 @@ public class Team
 {
     private readonly List<Player> _players = [];
 
-    private Team(TeamId id, string name, List<Player> players)
+    private Team(string name, List<Player> players)
     {
         if (string.IsNullOrWhiteSpace(name))
         {
@@ -18,7 +18,7 @@ public class Team
             throw new ArgumentException("A team must have at least one player.", nameof(players));
         }
 
-        Id = id;
+        Id = new TeamId();
         Name = name;
         _players = players;
     }

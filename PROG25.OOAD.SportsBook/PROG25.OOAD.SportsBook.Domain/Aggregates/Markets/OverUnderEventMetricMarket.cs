@@ -1,8 +1,7 @@
-using PROG25.OOAD.SportsBook.Domain.Aggregates.Events;
 using PROG25.OOAD.SportsBook.Domain.Aggregates.Markets.Abstractions;
 using PROG25.OOAD.SportsBook.Domain.Entities.Outcomes;
 using PROG25.OOAD.SportsBook.Domain.ValueObjects;
-using PROG25.OOAD.SportsBook.Domain.ValueObjects.EventStates;
+using PROG25.OOAD.SportsBook.Domain.ValueObjects.Events;
 using PROG25.OOAD.SportsBook.Domain.ValueObjects.MarketConfigurations;
 
 namespace PROG25.OOAD.SportsBook.Domain.Aggregates.Markets;
@@ -15,12 +14,14 @@ public class OverUnderEventMetricMarket : ScopedEventMetricMarket
 {
     internal OverUnderEventMetricMarket
     (
-        Event @event,
+        EventId eventId,
+        EventData eventData,
+        ISet<(TeamId, PlayerId)> teamPlayerPairs,
         OverUnderOutcome overOutcome,
         OverUnderOutcome underOutcome,
         OverUnderOutcome pushOutcome,
         OverUnderEventMetricMarketConfiguration configuration
-    ) : base(@event, new HashSet<Outcome> { overOutcome, underOutcome, pushOutcome }, configuration)
+    ) : base(eventId, eventData, teamPlayerPairs, new HashSet<Outcome> { overOutcome, underOutcome, pushOutcome }, configuration)
     {
         if (overOutcome.Type != OverUnderOutcomeType.Over)
         {
@@ -47,17 +48,18 @@ public class OverUnderEventMetricMarket : ScopedEventMetricMarket
 
     public override OverUnderEventMetricMarketConfiguration Configuration { get; }
 
-    public override MarketStatus Settle(EventStatistics _, Event @event)
+    public override SettlementAttemptStatus Settle(EventData eventData)
     {
-        base.Settle(_, @event);
-        if (!IsSettleable())
+        var settlementAttemptStatus = base.Settle(eventData);
+        if (settlementAttemptStatus != SettlementAttemptStatus.Possible)
         {
-            return Status; // if the base settle method changed the status, we should not proceed with settling this bet
+            return settlementAttemptStatus; // if the base settle method changed the status, we should not proceed with settling this bet
         }
 
-        var scopeState = Configuration.Scope.ExtractScopedStatistics(@event.Statistics);
-        var metric = scopeState.Extract(Configuration.Metric.Type);
-        var compareResult = Configuration.Threshold.Compare(metric);
+        var scopeState = Configuration.Scope.ExtractScopedMetrics(eventData.Metrics);
+        var actualMetricValue = scopeState.Extract(Configuration.Metric.Type);
+        var compareResult = Configuration.Metric.Compare(actualMetricValue, Configuration.Threshold);
+
         var winningOutcomeId = compareResult switch
         {
             ComparisonResult.GreaterThan => OverOutcome.Id,
@@ -68,6 +70,6 @@ public class OverUnderEventMetricMarket : ScopedEventMetricMarket
 
         Settle(winningOutcomeId);
 
-        return Status;
+        return SettlementAttemptStatus.Completed;
     }
 }

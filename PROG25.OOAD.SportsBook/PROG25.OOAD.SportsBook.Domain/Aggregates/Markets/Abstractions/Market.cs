@@ -1,10 +1,9 @@
 using System.Collections.Immutable;
 using PROG25.OOAD.SportsBook.Domain.Aggregates.Bets;
-using PROG25.OOAD.SportsBook.Domain.Aggregates.Events;
 using PROG25.OOAD.SportsBook.Domain.Entities;
 using PROG25.OOAD.SportsBook.Domain.Entities.Outcomes;
 using PROG25.OOAD.SportsBook.Domain.ValueObjects;
-using PROG25.OOAD.SportsBook.Domain.ValueObjects.EventStates;
+using PROG25.OOAD.SportsBook.Domain.ValueObjects.Events;
 using PROG25.OOAD.SportsBook.Domain.ValueObjects.MarketConfigurations.Abstractions;
 
 namespace PROG25.OOAD.SportsBook.Domain.Aggregates.Markets.Abstractions;
@@ -37,27 +36,19 @@ public abstract class Market
     public OutcomeId? WinningOutcomeId { get; private set; }
     public MarketStatus Status { get; private set; }
 
-    public virtual MarketStatus Settle(EventStatistics previousEventStats, Event @event)
+    public virtual SettlementAttemptStatus Settle(EventData eventData)
     {
-        var statisticsAreForDifferentEvents = previousEventStats.EventId != @event.Id;
-        if (statisticsAreForDifferentEvents)
+        if (!Configuration.Timestamp.HasOccurred(eventData))
         {
-            throw new ArgumentException("Previous and current event states must be for the same event.");
+            if (eventData.Status == EventStatus.Finished)
+            {
+                Settle((OutcomeId?)null); // if the event finished without the timestamp occurring, the bet is lost, but no winning outcome can be determined, so we settle with null winning outcome id
+                return SettlementAttemptStatus.Completed;
+            }
+            return SettlementAttemptStatus.NotPossible;
         }
 
-        var marketIsNotAffected = EventId != @event.Id;
-        if (marketIsNotAffected)
-        {
-            throw new ArgumentException("Current event state does not affect the market of this bet.");
-        }
-
-        if (@event.Statistics.Status == EventStatus.Cancelled)
-        {
-            Void();
-            return Status;
-        }
-
-        return Status;
+        return SettlementAttemptStatus.Possible;
     }
 
     internal Bet PlaceBet(CustomerId customerId, Money stake, Outcome outcome)
@@ -115,6 +106,7 @@ public abstract class Market
 
         Status = MarketStatus.Closed;
     }
+
     public void Void()
     {
         if (!IsVoidable())
@@ -147,4 +139,11 @@ public enum MarketStatus
     Open, // Bets allowed
     Settled,
     Voided, // Market voided
+}
+
+public enum SettlementAttemptStatus
+{
+    Completed,
+    Possible,
+    NotPossible,
 }

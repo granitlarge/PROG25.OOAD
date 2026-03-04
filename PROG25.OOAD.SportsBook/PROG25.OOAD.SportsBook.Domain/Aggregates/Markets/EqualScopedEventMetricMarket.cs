@@ -1,7 +1,7 @@
-using PROG25.OOAD.SportsBook.Domain.Aggregates.Events;
 using PROG25.OOAD.SportsBook.Domain.Aggregates.Markets.Abstractions;
 using PROG25.OOAD.SportsBook.Domain.Entities.Outcomes;
-using PROG25.OOAD.SportsBook.Domain.ValueObjects.EventStates;
+using PROG25.OOAD.SportsBook.Domain.ValueObjects;
+using PROG25.OOAD.SportsBook.Domain.ValueObjects.Events;
 using PROG25.OOAD.SportsBook.Domain.ValueObjects.MarketConfigurations;
 
 namespace PROG25.OOAD.SportsBook.Domain.Aggregates.Markets;
@@ -14,12 +14,13 @@ public class EqualScopedEventMetricMarket : EventMetricMarket
 {
     internal EqualScopedEventMetricMarket
     (
-        Event @event,
+        EventId eventId,
+        EventData eventData,
         YesNoOutcome yesOutcome,
         YesNoOutcome noOutcome,
         EqualScopedEventMetricMarketConfiguration marketConfiguration
     )
-        : base(@event, marketConfiguration, new HashSet<Outcome> { yesOutcome, noOutcome })
+        : base(eventId, eventData, marketConfiguration, new HashSet<Outcome> { yesOutcome, noOutcome })
     {
         if (!yesOutcome.IsYes)
         {
@@ -40,18 +41,18 @@ public class EqualScopedEventMetricMarket : EventMetricMarket
 
     public override EqualScopedEventMetricMarketConfiguration Configuration { get; }
 
-    public override MarketStatus Settle(EventStatistics _, Event @event)
+    public override SettlementAttemptStatus Settle(EventData eventData)
     {
-        var baseStatus = base.Settle(_, @event);
-        if (!IsSettleable())
+        var settlementAttemptStatus = base.Settle(eventData);
+        if (settlementAttemptStatus != SettlementAttemptStatus.Possible)
         {
-            return Status; // if the base settle method changed the status, we should not proceed with settling this bet
+            return settlementAttemptStatus;
         }
 
         var metricType = Configuration.Metric.Type;
         var scopeType = Configuration.ScopeType;
 
-        bool win = @event.Statistics
+        bool win = eventData.Metrics
                     .ExtractAllScopes(scopeType)
                     .Select(scopedMatchState => scopedMatchState.Extract(metricType))
                     .Distinct()
@@ -59,6 +60,6 @@ public class EqualScopedEventMetricMarket : EventMetricMarket
 
         var isYes = win;
         Settle(isYes ? YesOutcome.Id : NoOutcome.Id);
-        return Status;
+        return SettlementAttemptStatus.Completed;
     }
 }

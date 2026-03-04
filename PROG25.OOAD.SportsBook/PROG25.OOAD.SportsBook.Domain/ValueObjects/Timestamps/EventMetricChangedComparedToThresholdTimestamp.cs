@@ -1,12 +1,20 @@
-using PROG25.OOAD.SportsBook.Domain.ValueObjects.EventStates;
+using PROG25.OOAD.SportsBook.Domain.ValueObjects.Events;
 using PROG25.OOAD.SportsBook.Domain.ValueObjects.Metrics;
+using PROG25.OOAD.SportsBook.Domain.ValueObjects.Scopes;
+using PROG25.OOAD.SportsBook.Domain.ValueObjects.Timestamps.Abstractions;
 
 namespace PROG25.OOAD.SportsBook.Domain.ValueObjects.Timestamps;
 
-public record EventMetricChangedComparedToThresholdTimestamp : Timestamp
+public record EventMetricChangedComparedToThresholdTimestamp : EventDataTimestamp
 {
-    public EventMetricChangedComparedToThresholdTimestamp(Metric metric, decimal threshold, ComparisonResult comparisonResult)
-        : base(TimestampType.NextMetricChange)
+    public EventMetricChangedComparedToThresholdTimestamp
+    (
+        Metric metric,
+        Scope scope,
+        decimal threshold,
+        ComparisonResult comparisonResult
+    )
+        : base(EventDataTimestampType.EventData)
     {
 
         if (!metric.IsValidMetricValue(threshold))
@@ -19,29 +27,32 @@ public record EventMetricChangedComparedToThresholdTimestamp : Timestamp
             throw new ArgumentException("Comparison result cannot be Equal for a threshold comparison.", nameof(comparisonResult));
         }
 
-        ComparisonType = comparisonResult;
+        ExpectedComparisonResult = comparisonResult;
         Metric = metric;
+        Scope = scope;
         Threshold = threshold;
     }
 
     public Metric Metric { get; }
-    public ComparisonResult ComparisonType { get; }
+    public Scope Scope { get; }
+    public ComparisonResult ExpectedComparisonResult { get; }
     public decimal Threshold { get; }
 
-    public override bool HasOccured(EventStatistics currentMatchState)
+    public override bool HasOccurred(EventData currentEventData)
     {
-        var metricValue = currentMatchState.ExtractEventScope().Extract(Metric.Type);
+        var metricValue = Scope.Type switch
+        {
+            ScopeType.Event => currentEventData.Metrics.ExtractEventScope().Extract(Metric.Type),
+            ScopeType.Team => Scope.ExtractScopedMetrics(currentEventData.Metrics).Extract(Metric.Type),
+            ScopeType.Player => Scope.ExtractScopedMetrics(currentEventData.Metrics).Extract(Metric.Type),
+            _ => throw new NotImplementedException()
+        };
         return IsExceeded(metricValue);
-    }
-
-    public override bool HasOccured(EventStatistics _, EventStatistics currentMatchState)
-    {
-        return HasOccured(currentMatchState);
     }
 
     private bool IsExceeded(decimal metricValue)
     {
         var result = Metric.Compare(metricValue, Threshold);
-        return result != ComparisonResult.Equal && ComparisonType == result;
+        return result != ComparisonResult.Equal && ExpectedComparisonResult == result;
     }
 }

@@ -7,25 +7,29 @@ namespace PROG25.OOAD.SportsBook.Domain.ValueObjects.Metrics;
 /// </summary>
 public record ReferenceValueBasedMetric : Metric
 {
-    public static readonly ReferenceValueBasedMetric NonNegativePoints = new(MetricType.Points, DifferenceType.GreaterThan, ReferenceValueDecimalComparer.NegativeOneZeroTolerance);
-    public static readonly ReferenceValueBasedMetric Corners = new(MetricType.Corners, DifferenceType.GreaterThan, ReferenceValueDecimalComparer.NegativeOneZeroTolerance);
-    public static readonly ReferenceValueBasedMetric YellowCards = new(MetricType.YellowCards, DifferenceType.GreaterThan, ReferenceValueDecimalComparer.NegativeOneZeroTolerance);
-    public static readonly ReferenceValueBasedMetric RedCards = new(MetricType.RedCards, DifferenceType.GreaterThan, ReferenceValueDecimalComparer.NegativeOneZeroTolerance);
-    public static readonly ReferenceValueBasedMetric ElapsedMatchTimeSeconds = new(MetricType.ElapsedMatchTimeSeconds, DifferenceType.GreaterThan, ReferenceValueDecimalComparer.NegativeOneZeroTolerance);
-    public static readonly ReferenceValueBasedMetric ElapsedActualTimeSeconds = new(MetricType.ElapsedActualTimeSeconds, DifferenceType.GreaterThan, ReferenceValueDecimalComparer.NegativeOneZeroTolerance);
+    public static readonly ReferenceValueBasedMetric NonNegativePoints = new(MetricType.Points, ComparisonResult.GreaterThan, ReferenceValueDecimalComparer.NegativeOneZeroTolerance);
+    public static readonly ReferenceValueBasedMetric Corners = new(MetricType.Corners, ComparisonResult.GreaterThan, ReferenceValueDecimalComparer.NegativeOneZeroTolerance);
+    public static readonly ReferenceValueBasedMetric YellowCards = new(MetricType.YellowCards, ComparisonResult.GreaterThan, ReferenceValueDecimalComparer.NegativeOneZeroTolerance);
+    public static readonly ReferenceValueBasedMetric RedCards = new(MetricType.RedCards, ComparisonResult.GreaterThan, ReferenceValueDecimalComparer.NegativeOneZeroTolerance);
+    public static readonly ReferenceValueBasedMetric ElapsedMatchTimeSeconds = new(MetricType.ElapsedMatchTimeSeconds, ComparisonResult.GreaterThan, ReferenceValueDecimalComparer.NegativeOneZeroTolerance);
+    public static readonly ReferenceValueBasedMetric ElapsedActualTimeSeconds = new(MetricType.ElapsedActualTimeSeconds, ComparisonResult.GreaterThan, ReferenceValueDecimalComparer.NegativeOneZeroTolerance);
 
     public ReferenceValueBasedMetric
     (
         MetricType type,
-        DifferenceType differenceType,
+        ComparisonResult comparisonResult,
         ReferenceValueDecimalComparer referenceValueDecimalChanged) : base(type)
     {
-        DifferenceType = differenceType;
+        if (comparisonResult == ComparisonResult.Equal)
+        {
+            throw new ArgumentException("DifferenceType cannot be Equal for a ReferenceValueBasedMetric, as the metric value must be different from the reference value.", nameof(comparisonResult));
+        }
+
+        DifferenceType = comparisonResult;
         ReferenceValueDecimalChanged = referenceValueDecimalChanged;
     }
 
-
-    public DifferenceType DifferenceType { get; }
+    public ComparisonResult DifferenceType { get; }
     public ReferenceValueDecimalComparer ReferenceValueDecimalChanged { get; }
 
     public override ComparisonResult Compare(decimal firstValue, decimal secondValue)
@@ -44,15 +48,9 @@ public record ReferenceValueBasedMetric : Metric
         return result switch
         {
             ComparisonResult.Equal => false,
-            ComparisonResult.GreaterThan => DifferenceType == DifferenceType.GreaterThan,
-            ComparisonResult.LessThan => DifferenceType == DifferenceType.LessThan,
+            ComparisonResult.GreaterThan => DifferenceType == ComparisonResult.GreaterThan,
+            ComparisonResult.LessThan => DifferenceType == ComparisonResult.LessThan,
             _ => throw new InvalidOperationException("Unexpected comparison result.")
         };
     }
-}
-
-public enum DifferenceType
-{
-    GreaterThan,
-    LessThan
 }

@@ -2,9 +2,9 @@ using System.Collections.Immutable;
 using PROG25.OOAD.SportsBook.Domain.ValueObjects.Metrics;
 using PROG25.OOAD.SportsBook.Domain.ValueObjects.Scopes;
 
-namespace PROG25.OOAD.SportsBook.Domain.ValueObjects.EventStates.Soccer;
+namespace PROG25.OOAD.SportsBook.Domain.ValueObjects.Events.Soccer;
 
-public record SoccerMatchEventStatistics : EventStatistics
+public record SoccerMatchEventMetrics : EventMetrics
 {
     private readonly ImmutableHashSet<Metric> _supportedMetrics = new HashSet<Metric>
     {
@@ -14,19 +14,17 @@ public record SoccerMatchEventStatistics : EventStatistics
         ReferenceValueBasedMetric.RedCards
     }.ToImmutableHashSet();
 
-    public SoccerMatchEventStatistics
+    public SoccerMatchEventMetrics
     (
-        EventId eventId,
         TeamId homeTeamId,
         TeamId awayTeamId,
-        EventStatus status,
         TimeSpan elapsedMatchTime,
         TimeSpan elapsedActualTime,
         Dictionary<(PlayerId PlayerId, TeamId TeamId), uint> playerPoints,
         Dictionary<(PlayerId PlayerId, TeamId TeamId), uint> playerYellowCards,
         Dictionary<(PlayerId PlayerId, TeamId TeamId), uint> playerRedCards,
         Dictionary<(PlayerId PlayerId, TeamId TeamId), uint> playerCorners
-    ) : base(eventId, elapsedMatchTime, elapsedActualTime, status)
+    ) : base(elapsedMatchTime, elapsedActualTime)
     {
         HomeTeamId = homeTeamId;
         AwayTeamId = awayTeamId;
@@ -49,11 +47,11 @@ public record SoccerMatchEventStatistics : EventStatistics
 
     protected override ImmutableHashSet<Metric> SupportedMetrics => _supportedMetrics;
 
-    internal override List<ScopedEventStatistics> ExtractAllScopes(ScopeType scopeType)
+    internal override List<ScopedEventMetrics> ExtractAllScopes(ScopeType scopeType)
     {
         switch (scopeType)
         {
-            case ScopeType.Match:
+            case ScopeType.Event:
                 return [ExtractEventScope()];
             case ScopeType.Team:
                 return
@@ -73,8 +71,8 @@ public record SoccerMatchEventStatistics : EventStatistics
         }
     }
 
-    internal override ScopedEventStatistics ExtractEventScope() =>
-        new ScopedSoccerMatchEventState
+    internal override ScopedEventMetrics ExtractEventScope() =>
+        new ScopedSoccerMatchEventMetrics
         (
             0,
             ElapsedMatchTime,
@@ -85,9 +83,9 @@ public record SoccerMatchEventStatistics : EventStatistics
             (uint)PlayerCorners.Sum(x => x.Value)
         );
 
-    internal override ScopedEventStatistics ExtractPlayerScope(PlayerId playerId)
+    internal override ScopedEventMetrics ExtractPlayerScope(PlayerId playerId)
     {
-        return new ScopedSoccerMatchEventState
+        return new ScopedSoccerMatchEventMetrics
         (
             playerId,
             ElapsedMatchTime,
@@ -99,9 +97,9 @@ public record SoccerMatchEventStatistics : EventStatistics
         );
     }
 
-    internal override ScopedEventStatistics ExtractTeamScope(TeamId teamId)
+    internal override ScopedEventMetrics ExtractTeamScope(TeamId teamId)
     {
-        return new ScopedSoccerMatchEventState
+        return new ScopedSoccerMatchEventMetrics
         (
             teamId,
             ElapsedMatchTime,
@@ -137,5 +135,10 @@ public record SoccerMatchEventStatistics : EventStatistics
                 base.UpdateMetric(teamId, playerId, metricType, newValue);
                 break;
         }
+    }
+
+    internal override ScopedEventMetrics ExtractScope(Scope scope)
+    {
+        throw new NotImplementedException();
     }
 }

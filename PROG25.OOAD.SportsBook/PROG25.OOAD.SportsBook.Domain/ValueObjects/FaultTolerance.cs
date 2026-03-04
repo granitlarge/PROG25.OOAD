@@ -26,5 +26,5 @@ public enum ComparisonResult
 {
     GreaterThan,
     LessThan,
-    Equal
+    Equal,
 }

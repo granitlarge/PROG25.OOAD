@@ -5,9 +5,9 @@ using PROG25.OOAD.SportsBook.Domain.ValueObjects.Timestamps.Abstractions;
 
 namespace PROG25.OOAD.SportsBook.Domain.ValueObjects.MarketConfigurations;
 
-public record ChangeEventMetricMarketConfiguration : ScopedEventMetricMarketConfiguration
+public record ComparisonScopedEventMetricMarketConfiguration : ScopedEventMetricMarketConfiguration
 {
-    public ChangeEventMetricMarketConfiguration
+    public ComparisonScopedEventMetricMarketConfiguration
     (
         decimal referenceValue,
         Metric metric,

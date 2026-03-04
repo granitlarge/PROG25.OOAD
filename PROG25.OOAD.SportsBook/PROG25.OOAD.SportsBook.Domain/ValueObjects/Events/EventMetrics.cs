@@ -2,9 +2,9 @@ using System.Collections.Immutable;
 using PROG25.OOAD.SportsBook.Domain.ValueObjects.Metrics;
 using PROG25.OOAD.SportsBook.Domain.ValueObjects.Scopes;
 
-namespace PROG25.OOAD.SportsBook.Domain.ValueObjects.EventStates;
+namespace PROG25.OOAD.SportsBook.Domain.ValueObjects.Events;
 
-public abstract record EventStatistics
+public abstract record EventMetrics
 {
     private readonly ImmutableHashSet<Metric> _supportedMetrics = new HashSet<Metric>
     {
@@ -12,29 +12,24 @@ public abstract record EventStatistics
         ReferenceValueBasedMetric.ElapsedMatchTimeSeconds
     }.ToImmutableHashSet();
 
-    public EventStatistics
+    public EventMetrics
     (
-        EventId eventId,
         TimeSpan elapsedMatchTime,
-        TimeSpan elapsedActualTime,
-        EventStatus status
+        TimeSpan elapsedActualTime
     )
     {
         ElapsedMatchTime = elapsedMatchTime;
         ElapsedActualTime = elapsedActualTime;
-        Status = status;
-        EventId = eventId;
     }
 
-    public EventId EventId { get; }
-    public EventStatus Status { get; private set; }
     public TimeSpan ElapsedMatchTime { get; private set; }
     public TimeSpan ElapsedActualTime { get; private set; }
 
-    internal virtual ScopedEventStatistics ExtractTeamScope(TeamId teamId) { throw new NotImplementedException(); }
-    internal virtual ScopedEventStatistics ExtractPlayerScope(PlayerId playerId) { throw new NotImplementedException(); }
-    internal abstract ScopedEventStatistics ExtractEventScope();
-    internal abstract List<ScopedEventStatistics> ExtractAllScopes(ScopeType scopeType);
+    internal abstract ScopedEventMetrics ExtractScope(Scope scope);
+    internal virtual ScopedEventMetrics ExtractTeamScope(TeamId teamId) { throw new NotImplementedException(); }
+    internal virtual ScopedEventMetrics ExtractPlayerScope(PlayerId playerId) { throw new NotImplementedException(); }
+    internal abstract ScopedEventMetrics ExtractEventScope();
+    internal abstract List<ScopedEventMetrics> ExtractAllScopes(ScopeType scopeType);
 
     public virtual void UpdateMetric(TeamId teamId, PlayerId playerId, MetricType metricType, decimal newValue)
     {

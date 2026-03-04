@@ -1,10 +1,10 @@
 using PROG25.OOAD.SportsBook.Domain.ValueObjects.Metrics;
 
-namespace PROG25.OOAD.SportsBook.Domain.ValueObjects.EventStates;
+namespace PROG25.OOAD.SportsBook.Domain.ValueObjects.Events;
 
-public abstract record ScopedEventStatistics
+public abstract record ScopedEventMetrics
 {
-    protected ScopedEventStatistics(ScopedEventStateId id)
+    protected ScopedEventMetrics(ScopedEventStateId id)
     {
         Id = id;
     }

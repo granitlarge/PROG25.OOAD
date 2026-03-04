@@ -40,11 +40,11 @@ internal class SoccerMarketGenerator
         (
             ReferenceValueBasedMetric.NonNegativePoints,
             ScopeType.Team,
-            NextEventFinishedTimestamp.Instance,
+            EventStatusChangedTimestamp.ForStatus(EventStatus.Finished),
             "Draw"
         );
 
-        var (yes, no) = _oddsCalculator.CalculateYesNoOutcomes(drawWinnerMarketConfig, @event.Statistics);
+        var (yes, no) = _oddsCalculator.CalculateYesNoOutcomes(drawWinnerMarketConfig, @event.Data);
 
         var markets = new List<Market>
         {
@@ -66,14 +66,13 @@ internal class SoccerMarketGenerator
             (
                 ReferenceValueBasedMetric.NonNegativePoints,
                 new TeamScope(teamId),
-                NextEventFinishedTimestamp.Instance,
+                EventStatusChangedTimestamp.ForStatus(EventStatus.Finished),
                 $"{teamId} to Win",
                 OptimumType.Maximum
             );
 
-            var (yes, no) = _oddsCalculator.CalculateYesNoOutcomes(config, @event.Statistics);
-
-            return new OptimalEventMetricMarket(@event, yes, no, config);
+            var (yes, no) = _oddsCalculator.CalculateYesNoOutcomes(config, @event.Data);
+            return @event.CreateMarket(yes, no, config);
         }
 
         List<Market> GenerateOverUnderTotalGoalsMarket(TeamId teamId, decimal threshold, SoccerMatchEvent @event)
@@ -82,12 +81,12 @@ internal class SoccerMarketGenerator
             (
                 ReferenceValueBasedMetric.NonNegativePoints,
                 new TeamScope(teamId),
-                NextEventFinishedTimestamp.Instance,
+                EventStatusChangedTimestamp.ForStatus(EventStatus.Finished),
                 $"Over {threshold} Points for {teamId}",
-                new ReferenceValueDecimalComparer(threshold, new FaultTolerance(0))
+                threshold
             );
 
-            var (over, under, push) = _oddsCalculator.CalculateOverUnderOutcomes(config, @event.Statistics);
+            var (over, under, push) = _oddsCalculator.CalculateOverUnderOutcomes(config, @event.Data);
 
             return
             [

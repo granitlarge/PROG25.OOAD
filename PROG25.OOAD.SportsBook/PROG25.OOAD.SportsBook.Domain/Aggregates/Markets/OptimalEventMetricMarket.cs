@@ -1,8 +1,7 @@
-using PROG25.OOAD.SportsBook.Domain.Aggregates.Events;
 using PROG25.OOAD.SportsBook.Domain.Aggregates.Markets.Abstractions;
 using PROG25.OOAD.SportsBook.Domain.Entities.Outcomes;
 using PROG25.OOAD.SportsBook.Domain.ValueObjects;
-using PROG25.OOAD.SportsBook.Domain.ValueObjects.EventStates;
+using PROG25.OOAD.SportsBook.Domain.ValueObjects.Events;
 using PROG25.OOAD.SportsBook.Domain.ValueObjects.MarketConfigurations;
 
 namespace PROG25.OOAD.SportsBook.Domain.Aggregates.Markets;
@@ -15,16 +14,19 @@ public class OptimalEventMetricMarket : ScopedEventMetricMarket
 {
     internal OptimalEventMetricMarket
     (
-        Event @event,
+        EventId eventId,
+        EventData eventData,
+        ISet<(TeamId, PlayerId)> eventTeamPlayerPairs,
         YesNoOutcome yesOutcome,
         YesNoOutcome noOutcome,
         OptimalEventMetricMarketConfiguration configuration
-    ) : base(@event, new HashSet<Outcome> { yesOutcome, noOutcome }, configuration)
+    ) : base(eventId, eventData, eventTeamPlayerPairs, new HashSet<Outcome> { yesOutcome, noOutcome }, configuration)
     {
         if (!yesOutcome.IsYes)
         {
             throw new ArgumentException("yesOutcome must have IsYes set to true.", nameof(yesOutcome));
         }
+
         if (noOutcome.IsYes)
         {
             throw new ArgumentException("noOutcome must have IsYes set to false.", nameof(noOutcome));
@@ -39,16 +41,16 @@ public class OptimalEventMetricMarket : ScopedEventMetricMarket
     public YesNoOutcome NoOutcome { get; }
     public override OptimalEventMetricMarketConfiguration Configuration { get; }
 
-    public override MarketStatus Settle(EventStatistics _, Event @event)
+    public override SettlementAttemptStatus Settle(EventData eventData)
     {
-        base.Settle(_, @event);
-        if (!IsSettleable())
+        var settlementAttemptStatus = base.Settle(eventData);
+        if (settlementAttemptStatus != SettlementAttemptStatus.Possible)
         {
-            return Status;
+            return settlementAttemptStatus;
         }
 
-        var winnerScopedMatchState = Configuration.Scope.ExtractScopedStatistics(@event.Statistics);
-        var allScopedMatchStatesExceptWinner = @event.Statistics.ExtractAllScopes(Configuration.Scope.Type)
+        var winnerScopedMatchState = Configuration.Scope.ExtractScopedMetrics(eventData.Metrics);
+        var allScopedMatchStatesExceptWinner = eventData.Metrics.ExtractAllScopes(Configuration.Scope.Type)
         .Where(scope => scope.Id != winnerScopedMatchState.Id);
 
         var winnerMetricValue = winnerScopedMatchState.Extract(Configuration.Metric.Type);
@@ -63,7 +65,7 @@ public class OptimalEventMetricMarket : ScopedEventMetricMarket
 
         var winningOutComeId = isOptimum ? YesOutcome.Id : NoOutcome.Id;
         Settle(winningOutComeId);
-        return Status;
+        return SettlementAttemptStatus.Completed;
     }
 
 }

@@ -6,12 +6,9 @@ using PROG25.OOAD.SportsBook.Domain.ValueObjects.MarketConfigurations;
 
 namespace PROG25.OOAD.SportsBook.Domain.Aggregates.Markets;
 
-/// <summary>
-/// Market that settles based on whether a specified scoped metric has changed in a certain way compared to a reference value at the time of settlement.
-/// </summary>
-public class ChangeEventMetricMarket : ScopedEventMetricMarket
+public class ComparisonScopedEventMetricMarket : ScopedEventMetricMarket
 {
-    internal ChangeEventMetricMarket
+    internal ComparisonScopedEventMetricMarket
     (
         EventId eventId,
         EventData eventData,

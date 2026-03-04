@@ -1,5 +1,6 @@
-using PROG25.OOAD.SportsBook.Domain.Aggregates.Events;
 using PROG25.OOAD.SportsBook.Domain.Entities.Outcomes;
+using PROG25.OOAD.SportsBook.Domain.ValueObjects;
+using PROG25.OOAD.SportsBook.Domain.ValueObjects.Events;
 using PROG25.OOAD.SportsBook.Domain.ValueObjects.MarketConfigurations.Abstractions;
 
 namespace PROG25.OOAD.SportsBook.Domain.Aggregates.Markets.Abstractions;
@@ -8,12 +9,14 @@ public abstract class ScopedEventMetricMarket : EventMetricMarket
 {
     protected ScopedEventMetricMarket
     (
-        Event @event,
+        EventId eventId,
+        EventData eventData,
+        ISet<(TeamId, PlayerId)> teamPlayerPairs,
         ISet<Outcome> outcomes,
         ScopedEventMetricMarketConfiguration configuration
-    ) : base(@event, configuration, outcomes)
+    ) : base(eventId, eventData, configuration, outcomes)
     {
-        if (!configuration.Scope.IsValidForEvent(@event))
+        if (!configuration.Scope.IsValidForEventParticipans(teamPlayerPairs))
         {
             throw new InvalidOperationException("The event statistics do not satisfy the market's scope requirements.");
         }

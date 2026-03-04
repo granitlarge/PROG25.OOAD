@@ -1,5 +1,5 @@
 using PROG25.OOAD.SportsBook.Domain.Entities;
-using PROG25.OOAD.SportsBook.Domain.ValueObjects.EventStates.Soccer;
+using PROG25.OOAD.SportsBook.Domain.ValueObjects.Events.Soccer;
 
 namespace PROG25.OOAD.SportsBook.Domain.Aggregates.Events;
 
@@ -7,10 +7,10 @@ using EventType = ValueObjects.EventType;
 
 public class SoccerMatchEvent : Event
 {
-    private SoccerMatchEvent(DateTimeOffset startDate, Team homeTeam, Team awayTeam, SoccerMatchEventStatistics statistics)
-        : base(EventType.Soccer, [homeTeam, awayTeam], statistics, startDate)
+    private SoccerMatchEvent(Team homeTeam, Team awayTeam, SoccerMatchEventData eventData)
+        : base(EventType.Soccer, new HashSet<Team> { homeTeam, awayTeam }, eventData)
     {
-        Statistics = statistics;
+        Data = eventData;
         HomeTeam = homeTeam;
         AwayTeam = awayTeam;
     }
@@ -18,10 +18,10 @@ public class SoccerMatchEvent : Event
     public Team HomeTeam { get; }
     public Team AwayTeam { get; }
 
-    public override SoccerMatchEventStatistics Statistics { get; }
+    public override SoccerMatchEventData Data { get; }
 
-    public static SoccerMatchEvent Create(DateTimeOffset startDate, Team homeTeam, Team awayTeam, SoccerMatchEventStatistics statistics)
+    public static SoccerMatchEvent Create(Team homeTeam, Team awayTeam, SoccerMatchEventData eventData)
     {
-        return new SoccerMatchEvent(startDate, homeTeam, awayTeam, statistics);
+        return new SoccerMatchEvent(homeTeam, awayTeam, eventData);
     }
 }

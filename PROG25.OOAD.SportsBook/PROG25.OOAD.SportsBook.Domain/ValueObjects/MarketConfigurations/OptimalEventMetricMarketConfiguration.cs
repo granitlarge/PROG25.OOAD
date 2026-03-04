@@ -1,7 +1,7 @@
 using PROG25.OOAD.SportsBook.Domain.ValueObjects.MarketConfigurations.Abstractions;
 using PROG25.OOAD.SportsBook.Domain.ValueObjects.Metrics;
 using PROG25.OOAD.SportsBook.Domain.ValueObjects.Scopes;
-using PROG25.OOAD.SportsBook.Domain.ValueObjects.Timestamps;
+using PROG25.OOAD.SportsBook.Domain.ValueObjects.Timestamps.Abstractions;
 
 namespace PROG25.OOAD.SportsBook.Domain.ValueObjects.MarketConfigurations;
 
@@ -11,7 +11,7 @@ public record OptimalEventMetricMarketConfiguration : ScopedEventMetricMarketCon
     (
         Metric metric,
         Scope scope,
-        Timestamp timestamp,
+        EventDataTimestamp timestamp,
         string name,
         OptimumType optimumType
     ) : base(metric, scope, timestamp, name)

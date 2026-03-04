@@ -1,5 +1,4 @@
-using PROG25.OOAD.SportsBook.Domain.Aggregates.Events;
-using PROG25.OOAD.SportsBook.Domain.ValueObjects.EventStates;
+using PROG25.OOAD.SportsBook.Domain.ValueObjects.Events;
 
 namespace PROG25.OOAD.SportsBook.Domain.ValueObjects.Scopes;
 
@@ -8,17 +7,14 @@ public record MatchScope : Scope
     public static readonly MatchScope Instance = new();
 
     private MatchScope()
-        : base(ScopeType.Match)
+        : base(ScopeType.Event)
     {
     }
 
-    internal override ScopedEventStatistics ExtractScopedStatistics(EventStatistics state)
+    internal override ScopedEventMetrics ExtractScopedMetrics(EventMetrics state)
     {
-        return state.ExtractEventScope();
+        return state.ExtractAllScopes(ScopeType.Event).FirstOrDefault() ?? throw new InvalidOperationException("No match scope metrics found");
     }
 
-    internal override bool IsValidForEvent(Event m)
-    {
-        return true;
-    }
+    internal override bool IsValidForEventParticipans(ISet<(TeamId TeamId, PlayerId PlayerId)> teamPlayerPairs) => true;
 }
