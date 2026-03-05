@@ -25,6 +25,11 @@ public abstract class EventMetricMarket
             throw new ArgumentException("Market must have at least two outcomes.", nameof(outcomes));
         }
 
+        if (configuration.Timestamp.HasOccurred(eventData))
+        {
+            throw new InvalidOperationException("Cannot create an event metric market for an event that has already passed the market's timestamp");
+        }
+
         if (!eventData.Metrics.IsSupportedMetric(configuration.Metric))
         {
             throw new ArgumentException("The event does not support the metric required by the market configuration.", nameof(configuration));

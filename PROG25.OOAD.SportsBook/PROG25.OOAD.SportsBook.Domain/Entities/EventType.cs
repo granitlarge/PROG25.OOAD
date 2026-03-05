@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using PROG25.OOAD.SportsBook.Domain.ValueObjects;
 using PROG25.OOAD.SportsBook.Domain.ValueObjects.Metrics.Definitions;
 using PROG25.OOAD.SportsBook.Domain.ValueObjects.Scopes;
@@ -6,49 +7,44 @@ namespace PROG25.OOAD.SportsBook.Domain.Entities;
 
 public class EventType
 {
+    private readonly ImmutableHashSet<(ScopeType, MetricDefinition)> _supportedMetrics;
+    private readonly ImmutableHashSet<Period> _periods;
+
     public EventType
     (
-        ValueObjects.EventType eventType,
-        MetricDefinition scopedMetricThatDeterminesWinner,
+        EventTypeEnum eventType,
+        HashSet<(ScopeType ScopeType, MetricDefinition MetricDefinition)> supportedMetrics,
+        (ScopeType ScopeType, MetricDefinition MetricDefinition) metricThatDeterminesWinner,
         OptimumType optimumTypeThatDeterminesWinner,
-        ISet<MetricDefinition> supportedMetrics,
         ISet<Period> periods
     )
     {
-        Id = new EventTypeId();
-        Type = eventType;
-        MetricThatDeterminesWinner = scopedMetricThatDeterminesWinner;
-        OptimumTypeThatDeterminesWinner = optimumTypeThatDeterminesWinner;
-
-        if (!supportedMetrics.Contains(scopedMetricThatDeterminesWinner))
+        if (!supportedMetrics.Contains(metricThatDeterminesWinner))
         {
             throw new ArgumentException("The supported metric scopes must include the metric and scope that determine the winner.");
         }
 
-        SupportedMetrics = supportedMetrics;
-        Periods = periods;
+        if (metricThatDeterminesWinner.ScopeType == ScopeType.Event)
+        {
+            throw new ArgumentException("The metric that determines the winner cannot be scoped to the entire event .");
+        }
+
+        _supportedMetrics = [.. supportedMetrics];
+        _periods = [.. periods];
+
+        Id = new EventTypeId();
+        Type = eventType;
+        MetricThatDeterminesWinner = metricThatDeterminesWinner;
+        OptimumTypeThatDeterminesWinner = optimumTypeThatDeterminesWinner;
     }
 
     public EventTypeId Id { get; }
 
-    public ValueObjects.EventType Type { get; }
+    public EventTypeEnum Type { get; }
 
-    public ISet<MetricDefinition> SupportedMetrics { get; }
+    public ImmutableHashSet<(ScopeType ScopeType, MetricDefinition MetricDefinition)> SupportedMetrics => _supportedMetrics;
 
-    /// <summary>
-    /// This is the metric that determines the winner of the event. 
-    /// For example, in a soccer match, the metric that determines the winner is typically "Points" (i.e., goals scored). 
-    /// In a basketball game, it would also be "Points". 
-    /// In a tennis match, it might be "Games Won". 
-    /// This metric is crucial for determining the outcome of bets placed on the event.
-    /// </summary>
-    public MetricDefinition MetricThatDeterminesWinner { get; }
-
-    // <summary>
-    /// This indicates the scope of the metric that determines the winner. 
-    /// For example, in a soccer match, the scope is "Team" (i.e., the metric is evaluated for each team).
-    /// </summary>
-    public ScopeType ScopeTypeThatDeterminesWinner { get; }
+    public (ScopeType ScopeType, MetricDefinition MetricDefinition) MetricThatDeterminesWinner { get; }
 
     /// <summary>
     /// This indicates whether a higher or lower value of the metric is better for determining the winner. 
@@ -57,5 +53,5 @@ public class EventType
     /// </summary>
     public OptimumType OptimumTypeThatDeterminesWinner { get; }
 
-    public ISet<Period> Periods { get; }
+    public ImmutableHashSet<Period> Periods => _periods;
 }

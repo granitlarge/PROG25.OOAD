@@ -31,7 +31,7 @@ public abstract class Event
     public EventId Id { get; private set; }
     public EventType Type { get; private set; }
     public virtual EventData Data { get; }
-    public ImmutableHashSet<Team> Teams => _teams.ToImmutableHashSet();
+    public ImmutableHashSet<Team> Teams => [.. _teams];
 
     public EqualScopeEventMetricMarket CreateMarket(YesNoOutcome yesOutcome, YesNoOutcome noOutcome, EqualScopeEventMetricMetricMarketConfiguration configuration)
     {

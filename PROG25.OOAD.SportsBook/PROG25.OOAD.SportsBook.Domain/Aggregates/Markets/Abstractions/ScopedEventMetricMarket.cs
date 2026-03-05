@@ -15,16 +15,6 @@ public abstract class ScopedEventMetricMarket : EventMetricMarket
         ISet<Outcome> outcomes
     ) : base(eventId, eventData, configuration, outcomes)
     {
-        if (configuration.Timestamp.HasOccurred(eventData))
-        {
-            throw new InvalidOperationException("Cannot create an event metric market for an event that has already passed the market's timestamp");
-        }
-
-        if (!eventData.Metrics.IsSupportedMetric(configuration.Metric))
-        {
-            throw new InvalidOperationException($"The event does not support the metric {configuration.Metric.Name} required by the market configuration.");
-        }
-
         Configuration = configuration;
     }
 

@@ -11,5 +11,4 @@ public record PlayerScope : Scope
     }
 
     public PlayerId PlayerId { get; }
-
 }

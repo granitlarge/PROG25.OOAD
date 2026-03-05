@@ -46,6 +46,7 @@ public class ComparisonScopedEventMetricMarket : ScopedEventMetricMarket
         var metricValue = eventData.Metrics.Extract(Configuration.Scope, Configuration.Metric);
         var compareResult = Configuration.Metric.Compare(Configuration.ReferenceValue, metricValue.Value);
         var isYes = compareResult == Configuration.ExpectedComparisonResult;
+
         Settle(isYes ? YesOutcome.Id : NoOutcome.Id);
 
         return SettlementAttemptStatus.Completed;
