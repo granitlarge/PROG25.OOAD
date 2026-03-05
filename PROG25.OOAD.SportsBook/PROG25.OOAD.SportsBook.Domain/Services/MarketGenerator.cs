@@ -1,6 +1,7 @@
 using PROG25.OOAD.SportsBook.Domain.Aggregates.Events;
 using PROG25.OOAD.SportsBook.Domain.Aggregates.Markets.Abstractions;
 using PROG25.OOAD.SportsBook.Domain.Services.Soccer;
+using PROG25.OOAD.SportsBook.Domain.ValueObjects;
 
 namespace PROG25.OOAD.SportsBook.Domain.Services;
 
@@ -10,7 +11,7 @@ public class MarketGenerator
     {
         switch (match.Type)
         {
-            case ValueObjects.EventType.Soccer:
+            case EventTypeEnum.Soccer:
                 var oddsCalculator = new SoccerMarketOddsCalculatorService();
                 var soccerMarketFactory = new SoccerMarketGenerator(oddsCalculator);
                 return soccerMarketFactory.GenerateSoccerMarkets(match as SoccerMatchEvent ?? throw new ArgumentException("Match must be of type SoccerMatch", nameof(match)));

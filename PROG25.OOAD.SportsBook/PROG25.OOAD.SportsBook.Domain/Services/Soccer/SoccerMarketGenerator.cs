@@ -40,7 +40,7 @@ internal class SoccerMarketGenerator
         (
             ScopeType.Team,
             SoccerMetrics.Goals,
-            EventStatusChangedTimestamp.ForStatus(EventStatus.Finished),
+            NextEventStatusChangedTimestamp.ForStatus(EventStatus.Finished),
             "Draw"
         );
 
@@ -67,7 +67,7 @@ internal class SoccerMarketGenerator
             (
                 scope,
                 metric,
-                EventStatusChangedTimestamp.ForStatus(EventStatus.Finished),
+                NextEventStatusChangedTimestamp.ForStatus(EventStatus.Finished),
                 $"Winner {teamId}",
                 OptimumType.Maximum
             );
@@ -84,7 +84,7 @@ internal class SoccerMarketGenerator
                 threshold,
                 scope,
                 metric,
-                EventStatusChangedTimestamp.ForStatus(EventStatus.Finished),
+                NextEventStatusChangedTimestamp.ForStatus(EventStatus.Finished),
                 ComparisonResult.GreaterThan,
                 $"Total Goals Over {threshold} for {teamId}"
             );

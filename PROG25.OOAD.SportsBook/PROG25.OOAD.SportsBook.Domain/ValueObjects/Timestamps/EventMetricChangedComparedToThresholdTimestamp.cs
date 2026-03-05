@@ -16,7 +16,6 @@ public record EventMetricChangedComparedToThresholdTimestamp : EventDataTimestam
     )
         : base(EventDataTimestampType.EventData)
     {
-
         if (!metric.IsValidMetricValue(threshold))
         {
             throw new ArgumentOutOfRangeException(nameof(threshold), $"Threshold value {threshold} is not valid for metric {metric.Name}.");

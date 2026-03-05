@@ -8,15 +8,13 @@ using PROG25.OOAD.SportsBook.Domain.ValueObjects.MarketConfigurations;
 
 namespace PROG25.OOAD.SportsBook.Domain.Aggregates.Events;
 
-using EventType = ValueObjects.EventType;
-
 public abstract class Event
 {
     private readonly ISet<Team> _teams;
 
     protected Event
     (
-        EventType matchType,
+        EventTypeEnum eventType,
         ISet<Team> teams,
         EventData eventData
     )
@@ -24,12 +22,12 @@ public abstract class Event
         _teams = teams.ToHashSet();
 
         Id = new EventId();
-        Type = matchType;
+        Type = eventType;
         Data = eventData;
     }
 
     public EventId Id { get; private set; }
-    public EventType Type { get; private set; }
+    public EventTypeEnum Type { get; private set; }
     public virtual EventData Data { get; }
     public ImmutableHashSet<Team> Teams => [.. _teams];
 

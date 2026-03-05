@@ -7,9 +7,9 @@ public record MetricValue
 {
     public MetricValue(Scope scope, MetricDefinition metric, decimal value)
     {
-        if (!metric.IsValidMetricValue(value))
+        if (!metric.IsValidMetricValue(value) || !metric.IsValidScope(scope))
         {
-            throw new ArgumentException("Value is not valid for the given metric definition.", nameof(value));
+            throw new ArgumentException("Value or scope is not valid for the given metric definition.", nameof(value));
         }
         Scope = scope;
         Metric = metric;

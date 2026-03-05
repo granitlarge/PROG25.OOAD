@@ -10,7 +10,7 @@ namespace PROG25.OOAD.SportsBook.Domain.Aggregates.Markets;
 /// A market that settles based on whether a specified metric has the same value across all scopes of a certain type at the time of settlement. 
 /// For example, this could be used to create a market that settles YES if all teams have the same number of goals at the end of the match, and NO otherwise.
 /// I.e., it can be used to implement draws.
-/// </summary>
+/// </summary> 
 public class EqualScopeEventMetricMarket : EventMetricMarket
 {
     internal EqualScopeEventMetricMarket
@@ -37,7 +37,6 @@ public class EqualScopeEventMetricMarket : EventMetricMarket
         NoOutcome = noOutcome;
         Configuration = marketConfiguration;
     }
-
 
     public YesNoOutcome YesOutcome { get; }
     public YesNoOutcome NoOutcome { get; }

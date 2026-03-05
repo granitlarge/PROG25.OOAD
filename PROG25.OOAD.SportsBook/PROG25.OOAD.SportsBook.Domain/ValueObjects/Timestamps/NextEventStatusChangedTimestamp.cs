@@ -3,12 +3,12 @@ using PROG25.OOAD.SportsBook.Domain.ValueObjects.Timestamps.Abstractions;
 
 namespace PROG25.OOAD.SportsBook.Domain.ValueObjects.Timestamps;
 
-public record EventStatusChangedTimestamp : EventDataTimestamp
+public record NextEventStatusChangedTimestamp : EventDataTimestamp
 {
-    public static EventStatusChangedTimestamp ForStatus(EventStatus newStatus) => new(newStatus);
+    public static NextEventStatusChangedTimestamp ForStatus(EventStatus newStatus) => new(newStatus);
     public EventStatus NewStatus { get; }
 
-    public EventStatusChangedTimestamp(EventStatus newStatus)
+    public NextEventStatusChangedTimestamp(EventStatus newStatus)
         : base(EventDataTimestampType.NextEventDataChanged)
     {
         NewStatus = newStatus;

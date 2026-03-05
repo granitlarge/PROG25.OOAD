@@ -1,7 +1,0 @@
-namespace PROG25.OOAD.Domain.ValueObjects;
-
-public enum MatchType
-{
-    Soccer,
-    TableTennis
-}

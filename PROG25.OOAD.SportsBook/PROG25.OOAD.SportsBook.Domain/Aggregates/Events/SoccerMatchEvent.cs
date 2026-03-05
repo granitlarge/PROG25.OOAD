@@ -1,14 +1,13 @@
 using PROG25.OOAD.SportsBook.Domain.Entities;
+using PROG25.OOAD.SportsBook.Domain.ValueObjects;
 using PROG25.OOAD.SportsBook.Domain.ValueObjects.Events;
 
 namespace PROG25.OOAD.SportsBook.Domain.Aggregates.Events;
 
-using EventType = ValueObjects.EventType;
-
 public class SoccerMatchEvent : Event
 {
     private SoccerMatchEvent(Team homeTeam, Team awayTeam, EventData eventData)
-        : base(EventType.Soccer, new HashSet<Team> { homeTeam, awayTeam }, eventData)
+        : base(EventTypeEnum.Soccer, new HashSet<Team> { homeTeam, awayTeam }, eventData)
     {
         Data = eventData;
         HomeTeam = homeTeam;

@@ -7,7 +7,7 @@ using PROG25.OOAD.SportsBook.Domain.ValueObjects.MarketConfigurations;
 namespace PROG25.OOAD.SportsBook.Domain.Aggregates.Markets;
 
 /// <summary>
-/// Market that settles based on whether a specified scoped metric is the optimal value (e.g. maximum or minimum) among all scopes of a certain type at the time of settlement.
+/// Market that settles based on whether a specified scoped metric is the optimal value (e.g. maximum or minimum) among all scopes of the same type at the time of settlement.
 /// For example, this could be used to create a market that settles YES if a team's total goals at the end of the match are higher than both the other teams' total goals, and NO otherwise.
 /// I.e. it can be used to implement wins or losses.
 /// </summary>
@@ -56,13 +56,12 @@ public class OptimalScopedEventMetricMarket : ScopedEventMetricMarket
 
         var isOptimal = Configuration.OptimumType switch
         {
-            OptimumType.Maximum => allMetricInScopeExceptSpecificMetric.Max()!.Value < specificMetric.Value,
-            OptimumType.Minimum => allMetricInScopeExceptSpecificMetric.Min()!.Value > specificMetric.Value,
+            OptimumType.Maximum => allMetricInScopeExceptSpecificMetric.Max(e => e.Value) < specificMetric.Value,
+            OptimumType.Minimum => allMetricInScopeExceptSpecificMetric.Min(e => e.Value) > specificMetric.Value,
             _ => throw new InvalidOperationException("Unsupported optimality type.")
         };
 
         Settle(isOptimal ? YesOutcome.Id : NoOutcome.Id);
         return SettlementAttemptStatus.Completed;
     }
-
 }

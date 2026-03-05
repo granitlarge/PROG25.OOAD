@@ -21,10 +21,12 @@ public class ComparisonScopedEventMetricMarket : ScopedEventMetricMarket
         {
             throw new ArgumentException("yesOutcome must have IsYes set to true.", nameof(yesOutcome));
         }
+
         if (noOutcome.IsYes)
         {
             throw new ArgumentException("noOutcome must have IsYes set to false.", nameof(noOutcome));
         }
+
         Configuration = configuration;
         YesOutcome = yesOutcome;
         NoOutcome = noOutcome;

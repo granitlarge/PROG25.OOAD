@@ -56,7 +56,7 @@ public abstract class EventMetricMarket
         {
             if (eventData.Status == EventStatus.Finished)
             {
-                Settle((OutcomeId?)null); // if the event finished without the timestamp occurring, the bet is lost, but no winning outcome can be determined, so we settle with null winning outcome id
+                Void(); // if the event has finished but the market's timestamp has not occurred, we void the market as it cannot be settled based on the final event data
                 return SettlementAttemptStatus.Completed;
             }
             return SettlementAttemptStatus.NotPossible;
@@ -95,14 +95,14 @@ public abstract class EventMetricMarket
         return new BetLeg(Id, outcome.Id, outcome.Odds);
     }
 
-    public void Settle(OutcomeId? winningOutcomeId)
+    public void Settle(OutcomeId winningOutcomeId)
     {
         if (!IsSettleable())
         {
             throw new InvalidOperationException("Only open or closed markets can be settled.");
         }
 
-        if (winningOutcomeId != null && Outcomes.All(outcome => outcome.Id != winningOutcomeId))
+        if (Outcomes.All(outcome => outcome.Id != winningOutcomeId))
         {
             throw new ArgumentException("Winning outcome ID must be one of the market's outcomes.", nameof(winningOutcomeId));
         }
