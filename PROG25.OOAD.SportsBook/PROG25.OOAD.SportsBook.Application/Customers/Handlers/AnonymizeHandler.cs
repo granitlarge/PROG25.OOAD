@@ -1,9 +1,10 @@
+using PROG25.OOAD.SportsBook.Application.Abstractions;
+using PROG25.OOAD.SportsBook.Application.Abstractions.Repositories;
 using PROG25.OOAD.SportsBook.Application.Customers.Commands;
-using PROG25.OOAD.SportsBook.Application.Repositories;
 
 namespace PROG25.OOAD.SportsBook.Application.Customers.Handlers;
 
-public class AnonymizeHandler(IUnitOfWork unitOfWork)
+public class AnonymizeHandler(IUnitOfWork unitOfWork) : ICommandHandler<AnonymizeCommand>
 {
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
 

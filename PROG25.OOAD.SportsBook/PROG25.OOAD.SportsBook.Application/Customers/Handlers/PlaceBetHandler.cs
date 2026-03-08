@@ -1,10 +1,11 @@
+using PROG25.OOAD.SportsBook.Application.Abstractions;
+using PROG25.OOAD.SportsBook.Application.Abstractions.Repositories;
 using PROG25.OOAD.SportsBook.Application.Customers.Commands;
-using PROG25.OOAD.SportsBook.Application.Repositories;
 using PROG25.OOAD.SportsBook.Domain.Services;
 
 namespace PROG25.OOAD.SportsBook.Application.Customers.Handlers;
 
-public class PlaceBetHandler
+public class PlaceBetHandler : ICommandHandler<PlaceBetCommand>
 {
     private readonly IUnitOfWork _unitOfWork;
 
@@ -39,7 +40,7 @@ public class PlaceBetHandler
             return (market, outcome);
         }).ToList();
 
-        var bet = CustomerDomainService.PlaceBet(customer, marketAndOutcome, command.Stake);
+        var bet = PlaceBetService.PlaceBet(customer, marketAndOutcome, command.Stake);
 
         _unitOfWork.CustomerRepository.Update(customer);
         foreach (var market in markets)

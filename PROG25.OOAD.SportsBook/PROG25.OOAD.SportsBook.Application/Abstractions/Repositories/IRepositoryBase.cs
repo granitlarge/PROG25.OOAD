@@ -1,4 +1,4 @@
-namespace PROG25.OOAD.SportsBook.Application.Repositories;
+namespace PROG25.OOAD.SportsBook.Application.Abstractions.Repositories;
 
 public interface IRepositoryBase<T_Id, T_Entity>
 {

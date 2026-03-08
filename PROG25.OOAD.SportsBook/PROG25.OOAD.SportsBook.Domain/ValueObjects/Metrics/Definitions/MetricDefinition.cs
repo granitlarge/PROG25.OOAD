@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using PROG25.OOAD.SportsBook.Domain.ValueObjects.Metrics.Values;
 using PROG25.OOAD.SportsBook.Domain.ValueObjects.Scopes;
 
 namespace PROG25.OOAD.SportsBook.Domain.ValueObjects.Metrics.Definitions;
@@ -12,9 +13,10 @@ public record MetricDefinition
     (
         decimal minValue,
         decimal maxValue,
+        ScopeType scopeType,
+        AggregationType crossScopeAggregationType,
         FaultTolerance faultTolerance,
-        string name,
-        ImmutableHashSet<ScopeType> validScopes
+        string name
     )
     {
         if (string.IsNullOrWhiteSpace(name))
@@ -22,44 +24,93 @@ public record MetricDefinition
             throw new ArgumentException("Metric type name cannot be null or whitespace.", nameof(name));
         }
 
-        if (minValue > maxValue)
-        {
-            throw new ArgumentException("Minimum value cannot be greater than maximum value.");
-        }
-
-        if (validScopes.Count == 0)
-        {
-            throw new ArgumentException("ValidScopes must contain at least 1 value", nameof(validScopes));
-        }
-
-        Name = name;
         MinValue = minValue;
-        MaxValue = maxValue;
+        MaxValueValue = maxValue;
         FaultTolerance = faultTolerance;
-        ValidScopes = validScopes;
+        Name = name;
+        ScopeType = scopeType;
+        CrossScopeAggregationType = crossScopeAggregationType;
     }
 
-    private ImmutableHashSet<ScopeType> ValidScopes { get; }
+    private decimal MinValue { get; }
+    private decimal MaxValueValue { get; }
+
     private FaultTolerance FaultTolerance { get; }
+    public ScopeType ScopeType { get; }
+    private AggregationType CrossScopeAggregationType { get; }
 
     public string Name { get; }
-    public decimal MinValue { get; }
-    public decimal MaxValue { get; }
 
     public bool IsValidMetricValue(decimal value)
     {
-        var isWithinRange = value >= MinValue && value <= MaxValue;
-        return isWithinRange;
-    }
-
-    public bool IsValidScopeType(ScopeType scope)
-    {
-        return ValidScopes.Contains(scope);
+        var isWithinBounds = value >= MinValue && value <= MaxValueValue;
+        return isWithinBounds;
     }
 
     public bool IsValidScope(Scope scope)
     {
-        return ValidScopes.Contains(scope.Type);
+        return ScopeType == scope.Type;
+    }
+
+    public bool IsValidScopeType(ScopeType scope)
+    {
+        return scope == ScopeType;
+    }
+
+    public MetricValue Aggregate(Scope requestedAggregationScope, ImmutableHashSet<MetricValue> metricValues)
+    {
+        return Aggregate(requestedAggregationScope.Type, metricValues).Single(mv => mv.Scope == requestedAggregationScope);
+    }
+
+    public ImmutableHashSet<MetricValue> Aggregate(ScopeType requestedAggregationLevel, ImmutableHashSet<MetricValue> metricValues)
+    {
+        var allMetricValuesBelongToThisDefinition = metricValues.All(mv => mv.Metric == this);
+        if (!allMetricValuesBelongToThisDefinition)
+        {
+            throw new ArgumentException("Cannot aggregate metric values of other definitions");
+        }
+
+        if (requestedAggregationLevel == ScopeType)
+        {
+            return [metricValues.Single(mv => mv.Metric == this)];
+        }
+
+        if (CrossScopeAggregationType == AggregationType.None)
+        {
+            throw new InvalidOperationException("Impossible to aggregate");
+        }
+
+        var isValidAggregation = requestedAggregationLevel switch
+        {
+            ScopeType.Player => ScopeType == ScopeType.Player,
+            ScopeType.Team => ScopeType == ScopeType.Team || ScopeType == ScopeType.Player,
+            ScopeType.Event => ScopeType == ScopeType.Team || ScopeType == ScopeType.Player || ScopeType == ScopeType.Event,
+            _ => throw new NotImplementedException()
+        };
+
+        if (!isValidAggregation)
+        {
+            throw new InvalidOperationException();
+        }
+
+        decimal aggregationFunction(IEnumerable<MetricValue> values) => CrossScopeAggregationType switch
+        {
+            AggregationType.Sum => values.Sum(v => v.Value),
+            _ => throw new NotImplementedException()
+        };
+
+        return requestedAggregationLevel switch
+        {
+            ScopeType.Event => [new MetricValue(EventScope.Instance, this, aggregationFunction(metricValues))],
+            ScopeType.Team => [
+                ..
+                metricValues
+                .GroupBy(rm => ((PlayerScope)rm.Scope).TeamId)
+                .Select(g => new MetricValue(new TeamScope(g.Key), this, aggregationFunction(g)))
+            ],
+            _ => throw new NotImplementedException()
+        };
+
     }
 
     public ComparisonResult Compare(decimal firstValue, decimal secondValue)
@@ -71,4 +122,10 @@ public record MetricDefinition
 
         return FaultTolerance.Compare(firstValue, secondValue);
     }
+}
+
+public enum AggregationType
+{
+    None,
+    Sum,
 }

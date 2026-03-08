@@ -5,20 +5,20 @@ using PROG25.OOAD.SportsBook.Domain.ValueObjects.Timestamps.Abstractions;
 
 namespace PROG25.OOAD.SportsBook.Domain.ValueObjects.Timestamps;
 
-public record EventMetricChangedComparedToThresholdTimestamp : EventDataTimestamp
+public record EventMetricChangedComparedToReferenceValueTimestamp : EventDataTimestamp
 {
-    public EventMetricChangedComparedToThresholdTimestamp
+    public EventMetricChangedComparedToReferenceValueTimestamp
     (
         Scope scope,
         MetricDefinition metric,
-        decimal threshold,
+        decimal referenceValue,
         ComparisonResult comparisonResult
     )
         : base(EventDataTimestampType.EventData)
     {
-        if (!metric.IsValidMetricValue(threshold))
+        if (!metric.IsValidMetricValue(referenceValue))
         {
-            throw new ArgumentOutOfRangeException(nameof(threshold), $"Threshold value {threshold} is not valid for metric {metric.Name}.");
+            throw new ArgumentOutOfRangeException(nameof(referenceValue), $"Reference value {referenceValue} is not valid for metric {metric.Name}.");
         }
 
         if (comparisonResult == ComparisonResult.Equal)
@@ -29,7 +29,7 @@ public record EventMetricChangedComparedToThresholdTimestamp : EventDataTimestam
         Scope = scope;
         Metric = metric;
         ExpectedComparisonResult = comparisonResult;
-        Threshold = threshold;
+        Threshold = referenceValue;
     }
 
     public Scope Scope { get; }

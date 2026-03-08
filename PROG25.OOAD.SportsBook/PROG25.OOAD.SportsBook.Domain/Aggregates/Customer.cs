@@ -1,4 +1,3 @@
-using PROG25.OOAD.Domain.ValueObjects;
 using PROG25.OOAD.SportsBook.Domain.Entities;
 using PROG25.OOAD.SportsBook.Domain.ValueObjects;
 
@@ -8,34 +7,23 @@ public class Customer
 {
     private Customer
     (
-        PersonId personId,
-        Currency currency,
-        Name name,
-        EmailAddress email
+        CustomerIdentity customerIdentity,
+        ResponsibleGambling responsibleGambling,
+        Currency currency
     )
     {
-        if (personId.Type == PersonIdType.Anonymized)
-        {
-            throw new ArgumentException("PersonId cannot be of type Anonymized when registering a new customer.", nameof(personId));
-        }
-
         Id = new CustomerId();
-        PersonId = personId;
+        Identity = customerIdentity;
+        ResponsibleGambling = responsibleGambling;
         Account = Account.Open(currency);
-        Rename(name);
-        ChangeEmail(email);
-        SelfExclusion = SelfExclusionInactive.Instance;
-        IsAnonymized = false;
         PlacedBetsCount = 0;
     }
 
     public CustomerId Id { get; }
-    public PersonId PersonId { get; private set; }
+    public CustomerIdentity Identity { get; }
+    public ResponsibleGambling ResponsibleGambling { get; }
     public Account Account { get; }
-    public Name Name { get; private set; }
-    public EmailAddress Email { get; private set; }
-    public SelfExclusion SelfExclusion { get; private set; }
-    public bool IsAnonymized { get; private set; }
+    public bool IsAnonymized => Identity.IsAnonymized;
     public int PlacedBetsCount { get; private set; }
 
     public void Anonymize()
@@ -43,91 +31,57 @@ public class Customer
         EnsureNotAnonymized();
         EnsureAccountBalanceIsZero();
         EnsureAllBetsSettledOrCancelled();
-
-        PersonId = AnonymizedPersonId.Instance;
-        Name = Name.Anonymized;
-        ChangeEmail(EmailAddress.Anonymized);
-        IsAnonymized = true;
+        Identity.Anonymize();
     }
 
-    public void ChangeEmail(EmailAddress newEmail)
+    public void Deposit(Money amount, DateTimeOffset now)
+    {
+        ResponsibleGambling.EnsureIsAllowedDeposit(amount, Account, now);
+        Account.Credit(amount, TransactionReason.ExternalTransfer);
+    }
+
+    public void PlaceBet(Money amount)
     {
         EnsureNotAnonymized();
-
-        if (newEmail == EmailAddress.Anonymized)
-        {
-            throw new ArgumentException("Email cannot be changed to an anonymized value.", nameof(newEmail));
-        }
-
-        Email = newEmail;
+        ResponsibleGambling.EnsureBetPlacementIsAllowed();
+        PlacedBetsCount++;
+        Account.Debit(amount, TransactionReason.BetPlacement);
     }
 
-    public void Rename(Name newName)
+    public void SettleBet(Money payout)
     {
         EnsureNotAnonymized();
-        if (newName == Name.Anonymized)
-        {
-            throw new ArgumentException("Name cannot be changed to an anonymized value.", nameof(newName));
-        }
-        Name = newName;
+        PlacedBetsCount--;
+        Account.Credit(payout, TransactionReason.BetSettlement);
     }
 
-    public void SelfExclude(DateTimeOffset end)
+    public void VoidBet(Money stake)
+    {
+        PlacedBetsCount--;
+        Account.Credit(stake, TransactionReason.BetCancellation);
+    }
+
+    public void Withdraw(Money amount)
     {
         EnsureNotAnonymized();
-        var attemptedToShortenSelfExclusion = SelfExclusion.IsActive && end < SelfExclusion.End;
-        if (attemptedToShortenSelfExclusion)
-        {
-            throw new InvalidOperationException("Cannot shorten an active self-exclusion period.");
-        }
-        SelfExclusion = new SelfExclusion(end);
+        Account.Debit(amount, TransactionReason.ExternalTransfer);
     }
 
-    internal void Deposit(Money amount, TransactionReason reason)
+    internal static Customer Create
+    (
+        PersonId personId,
+        Name name,
+        EmailAddress email,
+        Currency currency,
+        DepositLimits depositLimits
+    )
     {
-        EnsureNotAnonymized();
-        var isAttemptToAddMoneyWhileSelfExclusionActive = reason == TransactionReason.ExternalTransfer && SelfExclusion.IsActive;
-        if (isAttemptToAddMoneyWhileSelfExclusionActive)
-        {
-            throw new InvalidOperationException("Customer is not allowed to add money whilst self-exclusion is active.");
-        }
-
-        if (reason == TransactionReason.BetSettlement || reason == TransactionReason.BetCancellation)
-        {
-            PlacedBetsCount--;
-            if (PlacedBetsCount < 0)
-            {
-                throw new InvalidOperationException("Placed bets count cannot be negative.");
-            }
-        }
-
-        Account.Deposit(amount, reason);
-    }
-
-    internal void Withdraw(Money amount, TransactionReason reason)
-    {
-        EnsureNotAnonymized();
-        var isAttemptToPlaceBetWhileSelfExclusionActive = reason == TransactionReason.BetPlacement && SelfExclusion.IsActive;
-        if (isAttemptToPlaceBetWhileSelfExclusionActive)
-        {
-            throw new InvalidOperationException("Customer is not allowed to withdraw money whilst self-exclusion is active.");
-        }
-
-        if (reason == TransactionReason.BetPlacement)
-        {
-            PlacedBetsCount++;
-        }
-
-        Account.Withdraw(amount, reason);
-    }
-
-    public static Customer Register(bool customerWithPersonIdExists, PersonId personId, Name name, EmailAddress email, Currency accountCurrency)
-    {
-        if (customerWithPersonIdExists)
-        {
-            throw new InvalidOperationException($"A customer with the person ID {personId} already exists.");
-        }
-        return new Customer(personId, accountCurrency, name, email);
+        return new Customer
+        (
+            new CustomerIdentity(personId, name, email),
+            new ResponsibleGambling(depositLimits, SelfExclusionInactive.Instance),
+            currency
+        );
     }
 
     private void EnsureNotAnonymized()

@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using PROG25.OOAD.SportsBook.Domain.ValueObjects.Metrics.Definitions;
 using PROG25.OOAD.SportsBook.Domain.ValueObjects.Metrics.Values;
 using PROG25.OOAD.SportsBook.Domain.ValueObjects.Scopes;
@@ -15,19 +16,16 @@ public record EventMetrics
 
     public MetricValue Extract(Scope scope, MetricDefinition metricDefinition)
     {
-        if (!IsSupportedMetric(metricDefinition))
-        {
-            throw new ArgumentException($"The metric '{metricDefinition.Name}' is not supported for this event.");
-        }
-
-        var metricValue = _metricValues.Single(mv => mv.Metric == metricDefinition && mv.Scope == scope);
-        return metricValue;
+        return ExtractAll(scope.Type, metricDefinition).Single(mv => mv.Scope == scope);
     }
 
-    public List<MetricValue> ExtractAll(ScopeType scope, MetricDefinition metricDefinition)
+    public ImmutableHashSet<MetricValue> ExtractAll(ScopeType scopeType, MetricDefinition metricDefinition)
     {
-        var metricValues = _metricValues.Where(mv => mv.Scope.Type == scope && mv.Metric == metricDefinition).ToList();
-        return metricValues;
+        if (!IsSupportedMetric(metricDefinition))
+        {
+            throw new InvalidOperationException("Unsupported metric");
+        }
+        return metricDefinition.Aggregate(scopeType, _metricValues.Where(mv => mv.Metric == metricDefinition).ToImmutableHashSet());
     }
 
     public bool IsSupportedMetric(MetricDefinition metric)

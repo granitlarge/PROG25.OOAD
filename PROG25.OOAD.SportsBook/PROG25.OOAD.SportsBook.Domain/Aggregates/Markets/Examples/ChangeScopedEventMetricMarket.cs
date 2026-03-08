@@ -2,6 +2,7 @@ using PROG25.OOAD.SportsBook.Domain.Entities.Outcomes;
 using PROG25.OOAD.SportsBook.Domain.ValueObjects;
 using PROG25.OOAD.SportsBook.Domain.ValueObjects.Events;
 using PROG25.OOAD.SportsBook.Domain.ValueObjects.MarketConfigurations;
+using PROG25.OOAD.SportsBook.Domain.ValueObjects.MarketConfigurations.Examples;
 
 namespace PROG25.OOAD.SportsBook.Domain.Aggregates.Markets.Examples;
 

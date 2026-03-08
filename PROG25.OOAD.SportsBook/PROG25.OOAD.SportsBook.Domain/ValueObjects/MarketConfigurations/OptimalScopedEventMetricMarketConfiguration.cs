@@ -9,7 +9,7 @@ public record OptimalScopedEventMetricMarketConfiguration : ScopedEventMetricMar
 {
     public OptimalScopedEventMetricMarketConfiguration
     (
-                Scope scope,
+        Scope scope,
         MetricDefinition metric,
         EventDataTimestamp timestamp,
         string name,

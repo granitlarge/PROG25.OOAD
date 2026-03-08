@@ -43,9 +43,9 @@ public class EqualScopeEventMetricMarket : EventMetricMarket
 
     public override EqualScopeEventMetricMetricMarketConfiguration Configuration { get; }
 
-    public override SettlementAttemptStatus Settle(EventData eventData)
+    public override SettlementAttemptStatus TrySettle(EventData eventData)
     {
-        var settlementAttemptStatus = base.Settle(eventData);
+        var settlementAttemptStatus = base.TrySettle(eventData);
         if (settlementAttemptStatus != SettlementAttemptStatus.Possible)
         {
             return settlementAttemptStatus;

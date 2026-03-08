@@ -45,6 +45,7 @@ public class Bet
     public Money Stake { get; }
     public DateTimeOffset PlacedAt { get; }
     public BetStatus Status { get; private set; }
+#warning this assumes that bet legs are independent, but nowhere in the system are we prohibiting dependant betlegs.
     public Odds Odds => _legs.Where(leg => leg.Status != BetLegStatus.Void).Aggregate(new Odds(1.0m), (acc, leg) => acc * leg.Odds);
     public Money PotentialPayout => Stake * Odds.Value;
     public IReadOnlyList<BetLeg> Legs => _legs.AsReadOnly();

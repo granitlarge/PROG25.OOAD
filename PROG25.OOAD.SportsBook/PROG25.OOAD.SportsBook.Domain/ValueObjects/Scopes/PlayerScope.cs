@@ -1,14 +1,14 @@
-using PROG25.OOAD.SportsBook.Domain.ValueObjects.Events;
-
 namespace PROG25.OOAD.SportsBook.Domain.ValueObjects.Scopes;
 
 public record PlayerScope : Scope
 {
-    public PlayerScope(PlayerId playerId)
+    public PlayerScope(TeamId teamId, PlayerId playerId)
         : base(ScopeType.Player)
     {
+        TeamId = teamId;
         PlayerId = playerId;
     }
 
+    public TeamId TeamId { get; }
     public PlayerId PlayerId { get; }
 }

@@ -1,5 +1,4 @@
 using System.Collections.Immutable;
-using PROG25.OOAD.SportsBook.Domain.Aggregates.Bets;
 using PROG25.OOAD.SportsBook.Domain.Entities;
 using PROG25.OOAD.SportsBook.Domain.Entities.Outcomes;
 using PROG25.OOAD.SportsBook.Domain.ValueObjects;
@@ -50,7 +49,7 @@ public abstract class EventMetricMarket
     public OutcomeId? WinningOutcomeId { get; private set; }
     public MarketStatus Status { get; private set; }
 
-    public virtual SettlementAttemptStatus Settle(EventData eventData)
+    public virtual SettlementAttemptStatus TrySettle(EventData eventData)
     {
         if (!Configuration.Timestamp.HasOccurred(eventData))
         {
@@ -63,21 +62,6 @@ public abstract class EventMetricMarket
         }
 
         return SettlementAttemptStatus.Possible;
-    }
-
-    internal Bet PlaceBet(CustomerId customerId, Money stake, Outcome outcome)
-    {
-        if (Status != MarketStatus.Open)
-        {
-            throw new InvalidOperationException("Bets can only be placed on open markets.");
-        }
-
-        if (Outcomes.All(o => o.Id != outcome.Id))
-        {
-            throw new ArgumentException("Invalid outcome ID for this market.", nameof(outcome));
-        }
-
-        return Bet.Create(customerId, stake, [PlaceBetLeg(outcome)]);
     }
 
     internal BetLeg PlaceBetLeg(Outcome outcome)

@@ -1,7 +1,6 @@
 using PROG25.OOAD.SportsBook.Domain.Entities.Outcomes;
 using PROG25.OOAD.SportsBook.Domain.ValueObjects.Events;
 using PROG25.OOAD.SportsBook.Domain.ValueObjects.MarketConfigurations;
-using PROG25.OOAD.SportsBook.Domain.ValueObjects.MarketConfigurations.Abstractions;
 using PROG25.OOAD.SportsBook.Domain.ValueObjects.Odds;
 
 namespace PROG25.OOAD.SportsBook.Domain.Services.Soccer;

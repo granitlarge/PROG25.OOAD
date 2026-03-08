@@ -1,16 +1,20 @@
+using PROG25.OOAD.SportsBook.Application.Abstractions;
+using PROG25.OOAD.SportsBook.Application.Abstractions.Repositories;
 using PROG25.OOAD.SportsBook.Application.Customers.Commands;
-using PROG25.OOAD.SportsBook.Application.Repositories;
 using PROG25.OOAD.SportsBook.Domain.Aggregates;
+using PROG25.OOAD.SportsBook.Domain.Services;
 
 namespace PROG25.OOAD.SportsBook.Application.Customers.Handlers;
 
-public class RegisterHandler
+public class RegisterHandler : ICommandHandler<RegisterCommand>
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly CustomerRegistrationService _customerRegistrationService;
 
-    public RegisterHandler(IUnitOfWork unitOfWork)
+    public RegisterHandler(IUnitOfWork unitOfWork, CustomerRegistrationService customerRegistrationService)
     {
         _unitOfWork = unitOfWork;
+        _customerRegistrationService = customerRegistrationService;
     }
 
     public async Task Handle(RegisterCommand command)
@@ -21,13 +25,14 @@ public class RegisterHandler
         // (*) Add a unique constraint in the database -> business rule is enforced at the database level, which isn't good, because we want to enforce business rules in the domain layer, but is the least worst option.
 
         var customerWithPersonIdExists = await _unitOfWork.CustomerRepository.ExistsByPersonIdAsync(command.PersonId);
-        var customer = Customer.Register
+        var customer = _customerRegistrationService.Register
         (
-            customerWithPersonIdExists,
+            command.Age,
             command.PersonId,
             command.Name,
             command.Email,
-            command.Currency
+            command.Currency,
+            command.DepositLimits
         );
         _unitOfWork.CustomerRepository.Add(customer);
         await _unitOfWork.CommitAsync();
