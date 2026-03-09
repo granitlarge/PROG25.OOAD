@@ -20,7 +20,7 @@ public class Customer
     }
 
     public CustomerId Id { get; }
-    public CustomerIdentity Identity { get; }
+    public CustomerIdentity Identity { get; private set;}
     public ResponsibleGambling ResponsibleGambling { get; }
     public Account Account { get; }
     public bool IsAnonymized => Identity.IsAnonymized;
@@ -31,11 +31,24 @@ public class Customer
         EnsureNotAnonymized();
         EnsureAccountBalanceIsZero();
         EnsureAllBetsSettledOrCancelled();
-        Identity.Anonymize();
+        Identity = CustomerIdentity.Anonymized;
+    }
+
+    public void Rename(Name name)
+    {
+        EnsureNotAnonymized();
+        Identity = CustomerIdentity.Create(Identity.PersonId, name, Identity.Email);
+    }
+
+    public void ChangeEmail(EmailAddress email)
+    {
+        EnsureNotAnonymized();
+        Identity = CustomerIdentity.Create(Identity.PersonId, Identity.Name, email);
     }
 
     public void Deposit(Money amount, DateTimeOffset now)
     {
+        EnsureNotAnonymized();
         ResponsibleGambling.EnsureIsAllowedDeposit(amount, Account, now);
         Account.Credit(amount, TransactionReason.ExternalTransfer);
     }
@@ -57,6 +70,7 @@ public class Customer
 
     public void VoidBet(Money stake)
     {
+        EnsureNotAnonymized();
         PlacedBetsCount--;
         Account.Credit(stake, TransactionReason.BetCancellation);
     }
@@ -78,7 +92,7 @@ public class Customer
     {
         return new Customer
         (
-            new CustomerIdentity(personId, name, email),
+            CustomerIdentity.Create(personId, name, email),
             new ResponsibleGambling(depositLimits, SelfExclusionInactive.Instance),
             currency
         );
