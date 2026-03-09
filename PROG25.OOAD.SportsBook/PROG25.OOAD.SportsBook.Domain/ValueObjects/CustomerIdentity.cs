@@ -1,6 +1,6 @@
 namespace PROG25.OOAD.SportsBook.Domain.ValueObjects;
 
-public class CustomerIdentity
+public record CustomerIdentity
 {
     public static CustomerIdentity Anonymized => new(AnonymizedPersonId.Instance, Name.Anonymized, EmailAddress.Anonymized, true);
 
