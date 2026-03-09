@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using PROG25.OOAD.SportsBook.Domain.Aggregates.Bets;
 using PROG25.OOAD.SportsBook.Domain.Entities;
 using PROG25.OOAD.SportsBook.Domain.Entities.Outcomes;
 using PROG25.OOAD.SportsBook.Domain.ValueObjects;
@@ -34,7 +35,7 @@ public abstract class EventMetricMarket
             throw new ArgumentException("The event does not support the metric required by the market configuration.", nameof(configuration));
         }
 
-        _outcomes = outcomes.ToImmutableHashSet();
+        _outcomes = [.. outcomes];
 
         Id = new MarketId();
         EventId = eventId;
@@ -64,7 +65,7 @@ public abstract class EventMetricMarket
         return SettlementAttemptStatus.Possible;
     }
 
-    internal BetLeg PlaceBetLeg(Outcome outcome)
+    internal Bet PlaceBet(CustomerId customerId, Money stake, Outcome outcome)
     {
         if (Status != MarketStatus.Open)
         {
@@ -76,7 +77,7 @@ public abstract class EventMetricMarket
             throw new ArgumentException("Invalid outcome ID for this market.", nameof(outcome));
         }
 
-        return new BetLeg(Id, outcome.Id, outcome.Odds);
+        return Bet.Create(customerId, stake, Id, outcome.Id, outcome.Odds);
     }
 
     public void Settle(OutcomeId winningOutcomeId)

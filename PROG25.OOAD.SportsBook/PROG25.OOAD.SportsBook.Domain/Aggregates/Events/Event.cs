@@ -6,6 +6,7 @@ using PROG25.OOAD.SportsBook.Domain.Entities.Outcomes;
 using PROG25.OOAD.SportsBook.Domain.ValueObjects;
 using PROG25.OOAD.SportsBook.Domain.ValueObjects.Events;
 using PROG25.OOAD.SportsBook.Domain.ValueObjects.MarketConfigurations;
+using PROG25.OOAD.SportsBook.Domain.ValueObjects.Odds;
 using PROG25.OOAD.SportsBook.Domain.ValueObjects.Periods;
 using PROG25.OOAD.SportsBook.Domain.ValueObjects.Scopes;
 using PROG25.OOAD.SportsBook.Domain.ValueObjects.Timestamps.Abstractions;
@@ -62,6 +63,8 @@ public abstract class Event
         return [];
     }
 
+    private static readonly Odds FiftyPercentChangeOdds = new(2.0m);
+
     private ImmutableHashSet<EventMetricMarket> GenerateMarketsForPeriod(Period period)
     {
         // We need to know which metrics are valid for the given period.
@@ -96,8 +99,8 @@ public abstract class Event
         (
             Id,
             Data,
-            new YesNoOutcome(new ValueObjects.Odds.Odds(1.5m), true),
-            new YesNoOutcome(new ValueObjects.Odds.Odds(1.5m), false),
+            new YesNoOutcome(FiftyPercentChangeOdds, true),
+            new YesNoOutcome(FiftyPercentChangeOdds, false),
             config
         ))];
     }
@@ -116,8 +119,8 @@ public abstract class Event
         (
             Id,
             Data,
-            new YesNoOutcome(new ValueObjects.Odds.Odds(1.5m), true),
-            new YesNoOutcome(new ValueObjects.Odds.Odds(1.5m), false),
+            new YesNoOutcome(FiftyPercentChangeOdds, true),
+            new YesNoOutcome(FiftyPercentChangeOdds, false),
             config
         );
     }

@@ -8,10 +8,9 @@ namespace PROG25.OOAD.SportsBook.Domain.Services;
 
 public class PlaceBetService
 {
-    public static Bet PlaceBet(Customer customer, List<(EventMetricMarket Market, Outcome Outcome)> marketOutcomes, Money stake)
+    public static Bet PlaceBet(Customer customer, EventMetricMarket market, Outcome outcome, Money stake)
     {
-        var betLegs = marketOutcomes.Select(mo => mo.Market.PlaceBetLeg(mo.Outcome)).ToList();
-        var bet = Bet.Create(customer.Id, stake, betLegs);
+        var bet = market.PlaceBet(customer.Id, stake, outcome);
         customer.PlaceBet(stake);
         return bet;
     }

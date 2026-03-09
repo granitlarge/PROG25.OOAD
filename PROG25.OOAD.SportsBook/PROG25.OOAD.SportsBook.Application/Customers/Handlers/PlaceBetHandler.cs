@@ -21,32 +21,18 @@ public class PlaceBetHandler : ICommandHandler<PlaceBetCommand>
         // The timestamp occurs after the bet is placed: the bet is settled as usual.
 
         var customerTask = _unitOfWork.CustomerRepository.GetByIdAsync(command.CustomerId);
-        var marketTasks = Task.WhenAll(command.MarketOutcomes.Select(mo => _unitOfWork.MarketRepository.GetByIdAsync(mo.MarketId)).ToList());
+        var marketTask = _unitOfWork.MarketRepository.GetByIdAsync(command.MarketId);
 
-        await Task.WhenAll(customerTask, marketTasks);
+        await Task.WhenAll(customerTask, marketTask);
 
         var customer = await customerTask ?? throw new InvalidOperationException($"Customer with ID {command.CustomerId} not found.");
-        var markets = await marketTasks ?? throw new InvalidOperationException($"One or more markets not found for the provided market IDs: {string.Join(", ", command.MarketOutcomes.Select(mo => mo.MarketId))}.");
+        var market = await marketTask ?? throw new InvalidOperationException($"One or more markets not found for the provided market IDs: {command.MarketId}");
 
-        if (markets.Any(market => market == null))
-        {
-            throw new InvalidOperationException("One or more markets not found for the provided market IDs.");
-        }
-
-        var marketAndOutcome = markets.Select(market =>
-        {
-            var (_, OutcomeId) = command.MarketOutcomes.First(mo => mo.MarketId == market!.Id);
-            var outcome = market!.Outcomes.First(o => o.Id == OutcomeId);
-            return (market, outcome);
-        }).ToList();
-
-        var bet = PlaceBetService.PlaceBet(customer, marketAndOutcome, command.Stake);
+        var outcome = market.Outcomes.SingleOrDefault(o => o.Id == command.OutcomeId) ?? throw new InvalidOperationException($"Outcome {command.OutcomeId} is not part of market {command.MarketId}");
+        var bet = PlaceBetService.PlaceBet(customer, market, outcome, command.Stake);
 
         _unitOfWork.CustomerRepository.Update(customer);
-        foreach (var market in markets)
-        {
-            _unitOfWork.MarketRepository.Update(market!);
-        }
+        _unitOfWork.MarketRepository.Update(market);
         _unitOfWork.BetRepository.Add(bet);
 
         await _unitOfWork.CommitAsync();
