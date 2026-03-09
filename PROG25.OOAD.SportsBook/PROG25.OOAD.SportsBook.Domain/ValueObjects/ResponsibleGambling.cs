@@ -1,6 +1,6 @@
-using PROG25.OOAD.SportsBook.Domain.ValueObjects;
+using PROG25.OOAD.SportsBook.Domain.Entities;
 
-namespace PROG25.OOAD.SportsBook.Domain.Entities;
+namespace PROG25.OOAD.SportsBook.Domain.ValueObjects;
 
 public class ResponsibleGambling
 {
@@ -69,6 +69,4 @@ public class ResponsibleGambling
             throw new InvalidOperationException("Bet placement is not allowed while self-exclusion is active.");
         }
     }
-
-
 }
