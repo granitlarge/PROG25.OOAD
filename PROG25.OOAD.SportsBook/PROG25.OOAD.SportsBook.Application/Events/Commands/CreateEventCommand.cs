@@ -1,1 +1,0 @@
-namespace PROG25.OOAD.SportsBook.Application.Events.Commands;

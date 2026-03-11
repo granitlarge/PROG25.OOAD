@@ -1,12 +1,11 @@
 using System.Collections.Immutable;
 using PROG25.OOAD.BetExchange.Domain.Aggregates.Markets;
-using PROG25.OOAD.BetExchange.Domain.Aggregates.Markets.Abstractions;
 using PROG25.OOAD.BetExchange.Domain.Entities;
 using PROG25.OOAD.BetExchange.Domain.Entities.Outcomes;
 using PROG25.OOAD.BetExchange.Domain.ValueObjects;
 using PROG25.OOAD.BetExchange.Domain.ValueObjects.Events;
 using PROG25.OOAD.BetExchange.Domain.ValueObjects.MarketConfigurations;
-using PROG25.OOAD.BetExchange.Domain.ValueObjects.Oddss;
+using PROG25.OOAD.BetExchange.Domain.ValueObjects.MarketConfigurations.Abstractions;
 using PROG25.OOAD.BetExchange.Domain.ValueObjects.Periods;
 using PROG25.OOAD.BetExchange.Domain.ValueObjects.Scopes;
 using PROG25.OOAD.BetExchange.Domain.ValueObjects.Timestamps.Abstractions;
@@ -32,8 +31,11 @@ public abstract class Event
     }
 
     public EventId Id { get; private set; }
+
     public EventType Type { get; private set; }
+
     public virtual EventData Data { get; }
+
     public ImmutableHashSet<Team> Teams => [.. _teams];
 
     public EqualScopeEventMetricMarket CreateMarket(YesNoOutcome yesOutcome, YesNoOutcome noOutcome, EqualScopeEventMetricMetricMarketConfiguration configuration)
@@ -51,7 +53,7 @@ public abstract class Event
         return new ComparisonScopedEventMetricMarket(Id, Data, yesOutcome, noOutcome, configuration);
     }
 
-    public List<EventMetricMarket> GenerateMarkets()
+    public List<EventMetricMarketConfiguration> GenerateMarketConfigurations()
     {
         var periodDefinition = Type.GetPeriod(Data);
 
@@ -63,30 +65,28 @@ public abstract class Event
         return [];
     }
 
-    private static readonly Odds FiftyPercentChangeOdds = new(2.0m);
-
-    private ImmutableHashSet<EventMetricMarket> GenerateMarketsForPeriod(Period period)
+    private ImmutableHashSet<EventMetricMarketConfiguration> GenerateMarketConfigurationsForPeriod(Period period)
     {
         // We need to know which metrics are valid for the given period.
         // We need to know which metric determines the winner of the period.
 
         // Let's start with the winner of the period. It's one of the teams/players.
-        var winnerMarkets = period.WinnerRule != null ? GeneratePeriodWinnerMarkets(period.Name, period.WinnerRule, period.EndTimestamp) : [];
-        List<EqualScopeEventMetricMarket> drawMarket = period.WinnerRule != null ? [GenerateDrawMarket(period.Name, period.WinnerRule, period.EndTimestamp)] : [];
+        var winnerMarkets = period.WinnerRule != null ? GeneratePeriodWinnerMarketConfigurations(period.Name, period.WinnerRule, period.EndTimestamp) : [];
+        List<EqualScopeEventMetricMetricMarketConfiguration> drawMarket = period.WinnerRule != null ? [GenerateDrawMarketConfiguration(period.Name, period.WinnerRule, period.EndTimestamp)] : [];
 
-        var markets = new List<EventMetricMarket>();
+        var markets = new List<EventMetricMarketConfiguration>();
         markets.AddRange(winnerMarkets);
         markets.AddRange(drawMarket);
 
         foreach (var child in period.Children)
         {
-            markets.AddRange(GenerateMarketsForPeriod(child));
+            markets.AddRange(GenerateMarketConfigurationsForPeriod(child));
         }
 
         return [.. markets];
     }
 
-    private ImmutableHashSet<EventMetricMarket> GeneratePeriodWinnerMarkets(string periodName, WinnerRule winnerRule, EventDataTimestamp periodEndTimestamp)
+    private ImmutableHashSet<EventMetricMarketConfiguration> GeneratePeriodWinnerMarketConfigurations(string periodName, WinnerRule winnerRule, EventDataTimestamp periodEndTimestamp)
     {
         return [.. Teams.Select(team => new OptimalScopedEventMetricMarketConfiguration
         (
@@ -95,17 +95,10 @@ public abstract class Event
             periodEndTimestamp,
             $"{team.Name} to win period {periodName}",
             winnerRule.OptimumType
-        )).Select(config => new OptimalScopedEventMetricMarket
-        (
-            Id,
-            Data,
-            new YesNoOutcome(FiftyPercentChangeOdds, true),
-            new YesNoOutcome(FiftyPercentChangeOdds, false),
-            config
         ))];
     }
 
-    private EqualScopeEventMetricMarket GenerateDrawMarket(string periodName, WinnerRule winnerRule, EventDataTimestamp periodEndTimestamp)
+    private EqualScopeEventMetricMetricMarketConfiguration GenerateDrawMarketConfiguration(string periodName, WinnerRule winnerRule, EventDataTimestamp periodEndTimestamp)
     {
         var config = new EqualScopeEventMetricMetricMarketConfiguration
         (
@@ -115,13 +108,6 @@ public abstract class Event
             $"{periodName} will end in a draw"
         );
 
-        return new EqualScopeEventMetricMarket
-        (
-            Id,
-            Data,
-            new YesNoOutcome(FiftyPercentChangeOdds, true),
-            new YesNoOutcome(FiftyPercentChangeOdds, false),
-            config
-        );
+        return config;
     }
 }
