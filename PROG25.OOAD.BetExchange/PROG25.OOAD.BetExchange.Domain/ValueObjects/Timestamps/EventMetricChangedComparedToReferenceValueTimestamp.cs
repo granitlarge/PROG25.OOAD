@@ -1,6 +1,7 @@
+using System.Collections.Immutable;
+using PROG25.OOAD.BetExchange.Domain.ValueObjects.Dimensions;
 using PROG25.OOAD.BetExchange.Domain.ValueObjects.Events;
 using PROG25.OOAD.BetExchange.Domain.ValueObjects.Metrics.Definitions;
-using PROG25.OOAD.BetExchange.Domain.ValueObjects.Scopes;
 using PROG25.OOAD.BetExchange.Domain.ValueObjects.Timestamps.Abstractions;
 
 namespace PROG25.OOAD.BetExchange.Domain.ValueObjects.Timestamps;
@@ -9,7 +10,7 @@ public record EventMetricChangedComparedToReferenceValueTimestamp : EventDataTim
 {
     public EventMetricChangedComparedToReferenceValueTimestamp
     (
-        Scope scope,
+        ImmutableHashSet<DimensionFilter> dimensions,
         MetricDefinition metric,
         decimal referenceValue,
         ComparisonResult comparisonResult
@@ -26,21 +27,21 @@ public record EventMetricChangedComparedToReferenceValueTimestamp : EventDataTim
             throw new ArgumentException("Comparison result cannot be Equal for a threshold comparison.", nameof(comparisonResult));
         }
 
-        Scope = scope;
+        Dimensions = dimensions;
         Metric = metric;
         ExpectedComparisonResult = comparisonResult;
         Threshold = referenceValue;
     }
 
-    public Scope Scope { get; }
     public MetricDefinition Metric { get; }
     public ComparisonResult ExpectedComparisonResult { get; }
+    public ImmutableHashSet<DimensionFilter> Dimensions { get; }
     public decimal Threshold { get; }
 
     public override bool HasOccurred(EventData currentEventData)
     {
-        var metricValue = currentEventData.Metrics.Extract(Scope, Metric);
-        return IsExceeded(metricValue.Value);
+        var value = currentEventData.Metrics.Extract(Dimensions, Metric);
+        return IsExceeded(value);
     }
 
     private bool IsExceeded(decimal metricValue)

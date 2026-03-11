@@ -1,27 +1,29 @@
+using PROG25.OOAD.BetExchange.Domain.ValueObjects.Dimensions;
 using PROG25.OOAD.BetExchange.Domain.ValueObjects.MarketConfigurations.Abstractions;
 using PROG25.OOAD.BetExchange.Domain.ValueObjects.Metrics.Definitions;
-using PROG25.OOAD.BetExchange.Domain.ValueObjects.Scopes;
 using PROG25.OOAD.BetExchange.Domain.ValueObjects.Timestamps.Abstractions;
 
 namespace PROG25.OOAD.BetExchange.Domain.ValueObjects.MarketConfigurations;
 
-public record OptimalScopedEventMetricMarketConfiguration : ScopedEventMetricMarketConfiguration
+public record OptimalDimensionEventMetricMarketConfiguration : EventMetricMarketConfiguration
 {
-    public OptimalScopedEventMetricMarketConfiguration
+    public OptimalDimensionEventMetricMarketConfiguration
     (
-        Scope scope,
+        DimensionFilter dimension,
         MetricDefinition metric,
         EventDataTimestamp timestamp,
         string name,
         OptimumType optimumType
-    ) : base(scope, metric, timestamp, name)
+    ) : base(metric, timestamp, name)
     {
         OptimumType = optimumType;
-        if (Scope.Type == ScopeType.Event)
+        if (!metric.IsValidDimensionQuery(dimension))
         {
-            throw new ArgumentException("Scope type cannot be 'Event' for an optimal scoped metric market configuration.", nameof(metric));
+            throw new ArgumentException($"Dimension '{dimension}' is not valid for the metric.", nameof(dimension));
         }
+        Dimension = dimension;
     }
 
     public OptimumType OptimumType { get; }
+    public DimensionFilter Dimension { get; }
 }

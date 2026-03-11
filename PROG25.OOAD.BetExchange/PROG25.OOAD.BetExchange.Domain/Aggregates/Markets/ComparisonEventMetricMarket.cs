@@ -6,21 +6,35 @@ using PROG25.OOAD.BetExchange.Domain.ValueObjects.MarketConfigurations;
 
 namespace PROG25.OOAD.BetExchange.Domain.Aggregates.Markets;
 
-public class ComparisonScopedEventMetricMarket : ScopedEventMetricMarket
+public class ComparisonEventMetricMarket : EventMetricMarket
 {
-    internal ComparisonScopedEventMetricMarket
+    internal ComparisonEventMetricMarket
     (
         EventId eventId,
         EventData eventData,
         YesNoOutcome yesOutcome,
         YesNoOutcome noOutcome,
         ComparisonScopedEventMetricMarketConfiguration configuration
-    ) : base(eventId, eventData, configuration, yesOutcome, noOutcome)
+    ) : base(eventId, eventData, configuration, new HashSet<Outcome> { yesOutcome, noOutcome })
     {
+        if (!yesOutcome.IsYes)
+        {
+            throw new ArgumentException("Yes outcome must be a yes outcome.", nameof(yesOutcome));
+        }
+
+        if (noOutcome.IsYes)
+        {
+            throw new ArgumentException("No outcome must be a no outcome.", nameof(noOutcome));
+        }
+
         Configuration = configuration;
+        YesOutcome = yesOutcome;
+        NoOutcome = noOutcome;
     }
 
     public override ComparisonScopedEventMetricMarketConfiguration Configuration { get; }
+    public YesNoOutcome YesOutcome { get; }
+    public YesNoOutcome NoOutcome { get; }
 
     public override SettlementAttemptStatus TrySettle(EventData eventData)
     {
@@ -30,8 +44,8 @@ public class ComparisonScopedEventMetricMarket : ScopedEventMetricMarket
             return settlementAttemptStatus;
         }
 
-        var metricValue = eventData.Metrics.Extract(Configuration.Scope, Configuration.Metric);
-        var compareResult = Configuration.Metric.Compare(Configuration.ReferenceValue, metricValue.Value);
+        var value = eventData.Metrics.Extract(Configuration.Dimensions, Configuration.Metric);
+        var compareResult = Configuration.Metric.Compare(Configuration.ReferenceValue, value);
         var isYes = compareResult == Configuration.ExpectedComparisonResult;
 
         Settle(isYes ? YesOutcome.Id : NoOutcome.Id);

@@ -1,33 +1,27 @@
 using PROG25.OOAD.BetExchange.Domain.Aggregates.Bets;
-using PROG25.OOAD.BetExchange.Domain.Aggregates.Markets.Abstractions;
 using PROG25.OOAD.BetExchange.Domain.ValueObjects;
 
 namespace PROG25.OOAD.BetExchange.Domain.Aggregates.Matchings;
 
 public class Matching
 {
-    private Matching(EventMetricMarket market, Bet backBet, Bet layBet)
+    private Matching(Bet b1, Bet b2)
     {
-        if (market.Id != backBet.MarketId || market.Id != layBet.MarketId)
+        if (b1.OutcomeId != b2.OutcomeId || (b1.Side == b2.Side))
         {
-            throw new ArgumentException("Both bets must be for the same market as the matching.");
+            throw new ArgumentException("Bets must be on the same outcome but opposite sides to be matched.");
         }
 
-        if (backBet.OutcomeId != market.YesOutcome.Id || layBet.OutcomeId != market.NoOutcome.Id)
-        {
-            throw new ArgumentException("Back bet must be on the 'yes' outcome and lay bet must be on the 'no' outcome.");
-        }
-
-        if (backBet.Stake.Currency != layBet.Stake.Currency)
+        if (b1.Stake.Currency != b2.Stake.Currency)
         {
             throw new ArgumentException("Both bets must have the same currency.");
         }
 
         Id = new MatchingId();
-        BackBetId = backBet.Id;
-        LayBetId = layBet.Id;
+        BackBetId = b1.Id;
+        LayBetId = b2.Id;
 
-        Amount = new Money(Math.Min(backBet.Stake.Value, layBet.Stake.Value), backBet.Stake.Currency);
+        Amount = new Money(Math.Min(b1.Stake.Value, b2.Stake.Value), b1.Stake.Currency);
     }
 
     public MatchingId Id { get; }
@@ -35,8 +29,8 @@ public class Matching
     public BetId LayBetId { get; }
     public Money Amount { get; }
 
-    public static Matching Create(EventMetricMarket market, Bet backBet, Bet layBet)
+    public static Matching Create(Bet backBet, Bet layBet)
     {
-        return new Matching(market, backBet, layBet);
+        return new Matching(backBet, layBet);
     }
 }

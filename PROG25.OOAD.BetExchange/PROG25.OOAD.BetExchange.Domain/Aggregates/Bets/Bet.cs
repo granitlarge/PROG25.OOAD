@@ -1,4 +1,5 @@
 using PROG25.OOAD.BetExchange.Domain.ValueObjects;
+using PROG25.OOAD.BetExchange.Domain.ValueObjects.Oddss;
 
 namespace PROG25.OOAD.BetExchange.Domain.Aggregates.Bets;
 
@@ -9,7 +10,9 @@ public class Bet
         CustomerId customerId,
         MarketId marketId,
         OutcomeId outcomeId,
-        Money stake
+        Money stake,
+        Odds odds,
+        Side side
     )
     {
         if (stake <= Money.Zero(stake.Currency))
@@ -27,8 +30,10 @@ public class Bet
         Stake = stake;
         MarketId = marketId;
         OutcomeId = outcomeId;
+        Odds = odds;
         PlacedAt = DateTimeOffset.UtcNow;
         Status = BetStatus.Placed;
+        Side = side;
     }
 
     public BetId Id { get; }
@@ -38,6 +43,8 @@ public class Bet
     public BetStatus Status { get; private set; }
     public MarketId MarketId { get; }
     public OutcomeId OutcomeId { get; }
+    public Odds Odds { get; }
+    public Side Side { get; }
 
     public void Settle(OutcomeId? winningOutcomeId)
     {
@@ -58,8 +65,14 @@ public class Bet
         Status = BetStatus.Voided;
     }
 
-    internal static Bet Create(CustomerId customerId, Money stake, MarketId marketId, OutcomeId outcomeId)
+    internal static Bet Create(CustomerId customerId, Money stake, MarketId marketId, OutcomeId outcomeId, Odds odds, Side side)
     {
-        return new Bet(customerId, marketId, outcomeId, stake);
+        return new Bet(customerId, marketId, outcomeId, stake, odds, side);
     }
+}
+
+public enum Side
+{
+    Back,
+    Lay
 }

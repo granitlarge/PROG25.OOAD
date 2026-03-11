@@ -3,7 +3,6 @@ using PROG25.OOAD.BetExchange.Application.Abstractions.Repositories;
 using PROG25.OOAD.BetExchange.Application.Customers.Commands;
 using PROG25.OOAD.BetExchange.Application.Services;
 using PROG25.OOAD.BetExchange.Domain.Services;
-using PROG25.OOAD.BetExchange.Domain.ValueObjects;
 
 namespace PROG25.OOAD.BetExchange.Application.Customers.Handlers;
 
@@ -32,12 +31,9 @@ public class PlaceBetHandler : ICommandHandler<PlaceBetCommand>
         var customer = await customerTask ?? throw new InvalidOperationException($"Customer with ID {command.CustomerId} not found.");
         var market = await marketTask ?? throw new InvalidOperationException($"One or more markets not found for the provided market IDs: {command.MarketId}");
 
-        var outcome = market.YesOutcome.Id == command.OutcomeId ? market.YesOutcome :
-            market.NoOutcome.Id == command.OutcomeId ? market.NoOutcome :
-            throw new ArgumentException($"Invalid outcome ID {command.OutcomeId} for market {market.Id}", nameof(command.OutcomeId));
+        var outcome = market.Outcomes.FirstOrDefault(o => o.Id == command.OutcomeId) ?? throw new InvalidOperationException($"Outcome with ID {command.OutcomeId} not found in market with ID {command.MarketId}.");
 
-        var stake = command.Stake;
-        var bet = PlaceBetService.PlaceBet(customer, market, outcome, stake);
+        var bet = PlaceBetService.PlaceBet(customer, market, outcome, command.Stake, command.Odds, command.Side);
 
         _unitOfWork.CustomerRepository.Update(customer);
         _unitOfWork.MarketRepository.Update(market);

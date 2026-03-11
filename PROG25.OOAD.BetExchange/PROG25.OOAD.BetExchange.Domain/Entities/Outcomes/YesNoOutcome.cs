@@ -1,11 +1,11 @@
-using PROG25.OOAD.BetExchange.Domain.ValueObjects.Oddss;
-
 namespace PROG25.OOAD.BetExchange.Domain.Entities.Outcomes;
 
 public class YesNoOutcome : Outcome
 {
-    public YesNoOutcome(Odds odds, bool isYes)
-        : base(isYes ? "Yes" : "No", odds)
+    public static readonly YesNoOutcome Yes = new(true);
+    public static readonly YesNoOutcome No = new(false);
+    private YesNoOutcome(bool isYes)
+        : base(isYes ? "Yes" : "No")
     {
         IsYes = isYes;
     }

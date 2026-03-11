@@ -1,7 +1,7 @@
 using System.Collections.Immutable;
+using PROG25.OOAD.BetExchange.Domain.ValueObjects.Dimensions;
 using PROG25.OOAD.BetExchange.Domain.ValueObjects.Metrics.Definitions;
 using PROG25.OOAD.BetExchange.Domain.ValueObjects.Metrics.Values;
-using PROG25.OOAD.BetExchange.Domain.ValueObjects.Scopes;
 
 namespace PROG25.OOAD.BetExchange.Domain.ValueObjects.Events;
 
@@ -14,22 +14,50 @@ public record EventMetrics
         _metricValues = metricValues;
     }
 
-    public MetricValue Extract(Scope scope, MetricDefinition metricDefinition)
+    public decimal Extract(ImmutableHashSet<DimensionFilter> filters, MetricDefinition definition)
     {
-        return ExtractAll(scope.Type, metricDefinition).Single(mv => mv.Scope == scope);
-    }
-
-    public ImmutableHashSet<MetricValue> ExtractAll(ScopeType scopeType, MetricDefinition metricDefinition)
-    {
-        if (!IsSupportedMetric(metricDefinition))
+        if (!IsSupportedMetric(definition))
         {
             throw new InvalidOperationException("Unsupported metric");
         }
-        return metricDefinition.Aggregate(scopeType, _metricValues.Where(mv => mv.Metric == metricDefinition).ToImmutableHashSet());
+#warning is a sum really ALWAYS the right option here? Shouldn't the metric definition know how to aggregate itself?
+        return definition.Filter(filters, [.. _metricValues.Where(mv => mv.Definition == definition)]).Sum(mv => mv.Value);
+    }
+
+    public ImmutableHashSet<(DimensionFilter Query, decimal Value)> ExtractAll(List<string> dimensionNames, MetricDefinition definition)
+    {
+        if (!IsSupportedMetric(definition))
+        {
+            throw new InvalidOperationException("Unsupported metric");
+        }
+
+        return
+                [.. _metricValues
+                    .Where(metricValue => metricValue.Definition == definition)
+                    .Select(mv => (MetricValue: mv, DimensionValue: mv.Dimension.Value.Where(kv => dimensionNames.Any(dn => kv.Key == dn)).OrderBy(kv => kv.Key).Select(kv => kv.Value).ToList()))
+#warning Does this grouping really work?
+                    .GroupBy(metricValueAndDimensionValue => string.Join("#", metricValueAndDimensionValue.DimensionValue))
+                    .Select
+                    (
+                        metricValueAndDimensionValue =>
+                        (
+                            new DimensionFilter
+                            (
+                                dimensionNames
+                                .OrderBy(dn => dn)
+                                .Select((value, index) => new KeyValuePair<string, object>(dimensionNames[index], metricValueAndDimensionValue.First().DimensionValue[index]))
+                                .ToDictionary(kv => kv.Key, kv => kv.Value)
+                                .ToImmutableDictionary(),
+                                definition.Dimension
+                            ),
+                            metricValueAndDimensionValue.Sum(x => x.MetricValue.Value)
+                        )
+                    )];
     }
 
     public bool IsSupportedMetric(MetricDefinition metric)
     {
-        return _metricValues.Any(mv => mv.Metric == metric);
+        return _metricValues.Any(mv => mv.Definition == metric);
     }
+
 }

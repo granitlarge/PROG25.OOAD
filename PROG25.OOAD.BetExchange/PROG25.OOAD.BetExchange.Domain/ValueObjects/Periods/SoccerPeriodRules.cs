@@ -1,6 +1,5 @@
 using System.Collections.Immutable;
 using PROG25.OOAD.BetExchange.Domain.ValueObjects.Events;
-using PROG25.OOAD.BetExchange.Domain.ValueObjects.Scopes;
 using PROG25.OOAD.BetExchange.Domain.ValueObjects.Sports;
 using PROG25.OOAD.BetExchange.Domain.ValueObjects.Timestamps;
 
@@ -11,31 +10,31 @@ public record SoccerPeriodRules : PeriodRules
     private static readonly WinnerRule MaxiumTeamGoalsWinnerRule = new
     (
         Soccer.Goals,
-        ScopeType.Team,
+        [Sport.TeamIdDimensionName],
         OptimumType.Maximum
     );
 
     private static readonly Period FirstHalf = new
     (
         "First half",
-        new EventMetricChangedComparedToReferenceValueTimestamp(EventScope.Instance, Soccer.Period, 0, ComparisonResult.GreaterThan),
-        new EventMetricChangedComparedToReferenceValueTimestamp(EventScope.Instance, Soccer.Period, 1, ComparisonResult.GreaterThan),
+        new EventMetricChangedComparedToReferenceValueTimestamp([], Soccer.Period, 0, ComparisonResult.GreaterThan),
+        new EventMetricChangedComparedToReferenceValueTimestamp([], Soccer.Period, 1, ComparisonResult.GreaterThan),
         MaxiumTeamGoalsWinnerRule
     );
 
     private static readonly Period SecondHalf = new
     (
         "Second half",
-        new EventMetricChangedComparedToReferenceValueTimestamp(EventScope.Instance, Soccer.Period, 1, ComparisonResult.GreaterThan),
-        new EventMetricChangedComparedToReferenceValueTimestamp(EventScope.Instance, Soccer.Period, 2, ComparisonResult.GreaterThan),
+        new EventMetricChangedComparedToReferenceValueTimestamp([], Soccer.Period, 1, ComparisonResult.GreaterThan),
+        new EventMetricChangedComparedToReferenceValueTimestamp([], Soccer.Period, 2, ComparisonResult.GreaterThan),
         MaxiumTeamGoalsWinnerRule
     );
 
     private static Period FullTime(ImmutableHashSet<Period> children) => new
     (
         "Full time",
-        new EventMetricChangedComparedToReferenceValueTimestamp(EventScope.Instance, Soccer.Period, 0, ComparisonResult.GreaterThan),
-        new EventMetricChangedComparedToReferenceValueTimestamp(EventScope.Instance, Soccer.Period, 2, ComparisonResult.GreaterThan),
+        new EventMetricChangedComparedToReferenceValueTimestamp([], Soccer.Period, 0, ComparisonResult.GreaterThan),
+        new EventMetricChangedComparedToReferenceValueTimestamp([], Soccer.Period, 2, ComparisonResult.GreaterThan),
         MaxiumTeamGoalsWinnerRule,
         children
     );
@@ -43,8 +42,8 @@ public record SoccerPeriodRules : PeriodRules
     private static Period OT(ImmutableHashSet<Period> children) => new
     (
         "OT",
-        new EventMetricChangedComparedToReferenceValueTimestamp(EventScope.Instance, Soccer.Period, 2, ComparisonResult.GreaterThan),
-        new EventMetricChangedComparedToReferenceValueTimestamp(EventScope.Instance, Soccer.Period, 4, ComparisonResult.GreaterThan),
+        new EventMetricChangedComparedToReferenceValueTimestamp([], Soccer.Period, 2, ComparisonResult.GreaterThan),
+        new EventMetricChangedComparedToReferenceValueTimestamp([], Soccer.Period, 4, ComparisonResult.GreaterThan),
         MaxiumTeamGoalsWinnerRule,
         children
     );
@@ -52,31 +51,31 @@ public record SoccerPeriodRules : PeriodRules
     private static readonly Period OT1 = new
     (
         "OT 1",
-        new EventMetricChangedComparedToReferenceValueTimestamp(EventScope.Instance, Soccer.Period, 2, ComparisonResult.GreaterThan),
-        new EventMetricChangedComparedToReferenceValueTimestamp(EventScope.Instance, Soccer.Period, 3, ComparisonResult.GreaterThan),
+        new EventMetricChangedComparedToReferenceValueTimestamp([], Soccer.Period, 2, ComparisonResult.GreaterThan),
+        new EventMetricChangedComparedToReferenceValueTimestamp([], Soccer.Period, 3, ComparisonResult.GreaterThan),
         MaxiumTeamGoalsWinnerRule
     );
 
     private static readonly Period OT2 = new
     (
         "OT 2",
-        new EventMetricChangedComparedToReferenceValueTimestamp(EventScope.Instance, Soccer.Period, 3, ComparisonResult.GreaterThan),
-        new EventMetricChangedComparedToReferenceValueTimestamp(EventScope.Instance, Soccer.Period, 4, ComparisonResult.GreaterThan),
+        new EventMetricChangedComparedToReferenceValueTimestamp([], Soccer.Period, 3, ComparisonResult.GreaterThan),
+        new EventMetricChangedComparedToReferenceValueTimestamp([], Soccer.Period, 4, ComparisonResult.GreaterThan),
         MaxiumTeamGoalsWinnerRule
     );
 
     private static readonly Period Penalties = new
     (
         "Penalties",
-        new EventMetricChangedComparedToReferenceValueTimestamp(EventScope.Instance, Soccer.Period, 4, ComparisonResult.GreaterThan),
-        new EventMetricChangedComparedToReferenceValueTimestamp(EventScope.Instance, Soccer.Period, 5, ComparisonResult.GreaterThan)
+        new EventMetricChangedComparedToReferenceValueTimestamp([], Soccer.Period, 4, ComparisonResult.GreaterThan),
+        new EventMetricChangedComparedToReferenceValueTimestamp([], Soccer.Period, 5, ComparisonResult.GreaterThan)
     );
 
     private static readonly Period SuddenDeath = new
     (
         "Sudden death",
-        new EventMetricChangedComparedToReferenceValueTimestamp(EventScope.Instance, Soccer.Period, 5, ComparisonResult.GreaterThan),
-        new EventMetricChangedComparedToReferenceValueTimestamp(EventScope.Instance, Soccer.Period, 6, ComparisonResult.GreaterThan)
+        new EventMetricChangedComparedToReferenceValueTimestamp([], Soccer.Period, 5, ComparisonResult.GreaterThan),
+        new EventMetricChangedComparedToReferenceValueTimestamp([], Soccer.Period, 6, ComparisonResult.GreaterThan)
     );
 
     public override Period? GetPeriod(EventData eventData)
@@ -87,8 +86,8 @@ public record SoccerPeriodRules : PeriodRules
             return null;
         }
 
-        var period = eventData.Metrics.Extract(EventScope.Instance, Soccer.Period).Value;
-        bool? isTied = period > 0 && period <= 4 ? eventData.Metrics.ExtractAll(ScopeType.Team, Soccer.Goals).Select(mv => mv.Value).Distinct().Count() == 1 : null;
+        var period = eventData.Metrics.Extract([], Soccer.Period);
+        bool? isTied = period > 0 && period <= 4 ? eventData.Metrics.ExtractAll([Sport.TeamIdDimensionName], Soccer.Goals).Select(mv => mv.Value).Distinct().Count() == 1 : null;
 
         var firstHalf = period <= 1 ? FirstHalf : null;
         var secondHalf = period <= 2 ? SecondHalf : null;
@@ -116,7 +115,7 @@ public record SoccerPeriodRules : PeriodRules
             "Match",
             new NextEventStatusChangedTimestamp(EventStatus.InProgress),
             new NextEventStatusChangedTimestamp(EventStatus.Finished),
-            new WinnerRule(Soccer.IsWinner, ScopeType.Team, OptimumType.Maximum),
+            new WinnerRule(Soccer.Goals, [Sport.TeamIdDimensionName], OptimumType.Maximum),
             [.. children.Where(child => child != null).Cast<Period>()]
         );
     }

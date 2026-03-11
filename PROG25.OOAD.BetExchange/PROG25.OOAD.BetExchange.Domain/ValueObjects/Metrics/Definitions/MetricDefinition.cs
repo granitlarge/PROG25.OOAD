@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
+using System.Data;
+using PROG25.OOAD.BetExchange.Domain.ValueObjects.Dimensions;
 using PROG25.OOAD.BetExchange.Domain.ValueObjects.Metrics.Values;
-using PROG25.OOAD.BetExchange.Domain.ValueObjects.Scopes;
 
 namespace PROG25.OOAD.BetExchange.Domain.ValueObjects.Metrics.Definitions;
 
@@ -13,10 +14,9 @@ public record MetricDefinition
     (
         decimal minValue,
         decimal maxValue,
-        ScopeType scopeType,
-        AggregationType crossScopeAggregationType,
         FaultTolerance faultTolerance,
-        string name
+        string name,
+        DimensionDefinition dimension
     )
     {
         if (string.IsNullOrWhiteSpace(name))
@@ -28,16 +28,16 @@ public record MetricDefinition
         MaxValueValue = maxValue;
         FaultTolerance = faultTolerance;
         Name = name;
-        ScopeType = scopeType;
-        CrossScopeAggregationType = crossScopeAggregationType;
+        Dimension = dimension;
     }
 
     private decimal MinValue { get; }
+
     private decimal MaxValueValue { get; }
 
     private FaultTolerance FaultTolerance { get; }
-    public ScopeType ScopeType { get; }
-    private AggregationType CrossScopeAggregationType { get; }
+
+    public DimensionDefinition Dimension { get; }
 
     public string Name { get; }
 
@@ -47,70 +47,48 @@ public record MetricDefinition
         return isWithinBounds;
     }
 
-    public bool IsValidScope(Scope scope)
+    /// <summary>
+    /// Filters  the given metric values based on the given dimension queries. 
+    /// A metric value is considered relevant for a dimension query if it matches ALL criteria specified in the dimension query. 
+    /// If multiple dimension queries are given, a metric value is considered relevant if it matches ANY of the dimension queries.
+    /// </summary>
+    public IEnumerable<MetricValue> Filter(ImmutableHashSet<DimensionFilter> dimensionQueries, ImmutableHashSet<MetricValue> metricValues)
     {
-        return ScopeType == scope.Type;
-    }
-
-    public bool IsValidScopeType(ScopeType scope)
-    {
-        return scope == ScopeType;
-    }
-
-    public MetricValue Aggregate(Scope requestedAggregationScope, ImmutableHashSet<MetricValue> metricValues)
-    {
-        return Aggregate(requestedAggregationScope.Type, metricValues).Single(mv => mv.Scope == requestedAggregationScope);
-    }
-
-    public ImmutableHashSet<MetricValue> Aggregate(ScopeType requestedAggregationLevel, ImmutableHashSet<MetricValue> metricValues)
-    {
-        var allMetricValuesBelongToThisDefinition = metricValues.All(mv => mv.Metric == this);
-        if (!allMetricValuesBelongToThisDefinition)
+        if (metricValues.Any(mv => mv.Definition != this))
         {
-            throw new ArgumentException("Cannot aggregate metric values of other definitions");
+            throw new ArgumentException($"This metric definition cannot be used to filter metric values of other metric definition.");
         }
 
-        if (requestedAggregationLevel == ScopeType)
+        if (dimensionQueries.Any(dq => dq.Definition != Dimension))
         {
-            return [metricValues.Single(mv => mv.Metric == this)];
+            throw new ArgumentException($"A dimension query was specified that is invalid for this metric definition");
         }
 
-        if (CrossScopeAggregationType == AggregationType.None)
+        if (dimensionQueries.Count == 0)
         {
-            throw new InvalidOperationException("Impossible to aggregate");
+            foreach (var mv in metricValues)
+                yield return mv;
         }
-
-        var isValidAggregation = requestedAggregationLevel switch
+        else
         {
-            ScopeType.Player => ScopeType == ScopeType.Player,
-            ScopeType.Team => ScopeType == ScopeType.Team || ScopeType == ScopeType.Player,
-            ScopeType.Event => ScopeType == ScopeType.Team || ScopeType == ScopeType.Player || ScopeType == ScopeType.Event,
-            _ => throw new NotImplementedException()
-        };
+            foreach (var metricValue in metricValues)
+            {
+                var relevantDimensionQueries = dimensionQueries.Where(dq => metricValue.Dimension.Definition == dq.Definition).ToList();
+                if (relevantDimensionQueries.Count == 0)
+                    continue;
 
-        if (!isValidAggregation)
-        {
-            throw new InvalidOperationException();
+                var relevantDimensionQueriesGroupedByType = relevantDimensionQueries.GroupBy(rdq => rdq.Definition);
+                foreach (var group in relevantDimensionQueriesGroupedByType)
+                {
+                    // If the metric agrees with ANY of the dimension filters, yield it
+                    var isRelevantMetric = group.Any(dimensionQuery => dimensionQuery.Value.All(dqv => metricValue.Dimension.Value.Contains(dqv)));
+                    if (isRelevantMetric)
+                    {
+                        yield return metricValue;
+                    }
+                }
+            }
         }
-
-        decimal aggregationFunction(IEnumerable<MetricValue> values) => CrossScopeAggregationType switch
-        {
-            AggregationType.Sum => values.Sum(v => v.Value),
-            _ => throw new NotImplementedException()
-        };
-
-        return requestedAggregationLevel switch
-        {
-            ScopeType.Event => [new MetricValue(EventScope.Instance, this, aggregationFunction(metricValues))],
-            ScopeType.Team => [
-                ..
-                metricValues
-                .GroupBy(rm => ((PlayerScope)rm.Scope).TeamId)
-                .Select(g => new MetricValue(new TeamScope(g.Key), this, aggregationFunction(g)))
-            ],
-            _ => throw new NotImplementedException()
-        };
-
     }
 
     public ComparisonResult Compare(decimal firstValue, decimal secondValue)
@@ -122,10 +100,14 @@ public record MetricDefinition
 
         return FaultTolerance.Compare(firstValue, secondValue);
     }
-}
 
-public enum AggregationType
-{
-    None,
-    Sum,
+    internal bool IsValidDimensionValue(DimensionValue dv)
+    {
+        return Dimension == dv.Definition;
+    }
+
+    internal bool IsValidDimensionQuery(DimensionFilter dq)
+    {
+        return dq.Definition == Dimension;
+    }
 }

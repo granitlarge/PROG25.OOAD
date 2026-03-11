@@ -1,31 +1,28 @@
+using System.Collections.Immutable;
 using PROG25.OOAD.BetExchange.Domain.Aggregates.Bets;
 using PROG25.OOAD.BetExchange.Domain.Entities.Outcomes;
 using PROG25.OOAD.BetExchange.Domain.ValueObjects;
 using PROG25.OOAD.BetExchange.Domain.ValueObjects.Events;
 using PROG25.OOAD.BetExchange.Domain.ValueObjects.MarketConfigurations.Abstractions;
+using PROG25.OOAD.BetExchange.Domain.ValueObjects.Oddss;
 
 namespace PROG25.OOAD.BetExchange.Domain.Aggregates.Markets.Abstractions;
 
 public abstract class EventMetricMarket
 {
+    private readonly ImmutableHashSet<Outcome> _outcomes;
+
     protected EventMetricMarket
     (
         EventId eventId,
         EventData eventData,
         EventMetricMarketConfiguration configuration,
-        YesNoOutcome yesOutcome,
-        YesNoOutcome noOutcome
+        ISet<Outcome> outcomes
     )
     {
-
-        if (!yesOutcome.IsYes)
+        if (outcomes.Count < 2)
         {
-            throw new ArgumentException("The 'yes' outcome must have IsYes set to true.", nameof(yesOutcome));
-        }
-
-        if (!noOutcome.IsYes)
-        {
-            throw new ArgumentException("The 'no' outcome must have IsYes set to false.", nameof(noOutcome));
+            throw new ArgumentException("An event metric market must have at least two outcomes.", nameof(outcomes));
         }
 
         if (configuration.Timestamp.HasOccurred(eventData))
@@ -38,19 +35,17 @@ public abstract class EventMetricMarket
             throw new ArgumentException("The event does not support the metric required by the market configuration.", nameof(configuration));
         }
 
+        _outcomes = [.. outcomes];
         Id = new MarketId();
         EventId = eventId;
         Configuration = configuration;
-        YesOutcome = yesOutcome;
-        NoOutcome = noOutcome;
         Status = MarketStatus.Open;
     }
 
     public MarketId Id { get; }
     public EventId EventId { get; }
     public virtual EventMetricMarketConfiguration Configuration { get; }
-    public YesNoOutcome YesOutcome { get; }
-    public YesNoOutcome NoOutcome { get; }
+    public virtual ImmutableHashSet<Outcome> Outcomes => _outcomes;
     public OutcomeId? WinningOutcomeId { get; private set; }
     public MarketStatus Status { get; private set; }
 
@@ -73,7 +68,9 @@ public abstract class EventMetricMarket
     (
         CustomerId customerId,
         Money stake,
-        Outcome outcome
+        Outcome outcome,
+        Odds odds,
+        Side side
     )
     {
         if (Status != MarketStatus.Open)
@@ -81,12 +78,12 @@ public abstract class EventMetricMarket
             throw new InvalidOperationException("Bets can only be placed on open markets.");
         }
 
-        if (YesOutcome.Id != outcome.Id && NoOutcome.Id != outcome.Id)
+        if (!Outcomes.Contains(outcome))
         {
-            throw new ArgumentException("Invalid outcome ID for this market.", nameof(outcome));
+            throw new ArgumentException("The specified outcome is not part of this market.", nameof(outcome));
         }
 
-        return Bet.Create(customerId, stake, Id, outcome.Id);
+        return Bet.Create(customerId, stake, Id, outcome.Id, odds, side);
     }
 
     public void Settle(OutcomeId winningOutcomeId)
@@ -96,7 +93,7 @@ public abstract class EventMetricMarket
             throw new InvalidOperationException("Only open or closed markets can be settled.");
         }
 
-        if (YesOutcome.Id != winningOutcomeId && NoOutcome.Id != winningOutcomeId)
+        if (!Outcomes.Any(outcome => outcome.Id == winningOutcomeId))
         {
             throw new ArgumentException("Winning outcome ID must be one of the market's outcomes.", nameof(winningOutcomeId));
         }

@@ -1,88 +1,83 @@
+using System.Collections.Immutable;
+using PROG25.OOAD.BetExchange.Domain.ValueObjects.Dimensions;
 using PROG25.OOAD.BetExchange.Domain.ValueObjects.Metrics.Definitions;
-using PROG25.OOAD.BetExchange.Domain.ValueObjects.Scopes;
 
 namespace PROG25.OOAD.BetExchange.Domain.ValueObjects.Sports;
 
 public static class Soccer
 {
+    private static readonly DimensionDefinition PeriodSecondTeamPlayerDimension = new
+    (
+        new Dictionary<string, Type>
+        {
+            [Sport.PeriodDimensionName] = typeof(string),
+            [Sport.SecondDimensionName] = typeof(int),
+            [Sport.TeamIdDimensionName] = typeof(TeamId),
+            [Sport.PlayerIdDimensionName] = typeof(PlayerId)
+        }.ToImmutableDictionary()
+    );
+
     public static readonly MetricDefinition Goals = new
     (
-        minValue: 0,
-        maxValue: decimal.MaxValue,
-        ScopeType.Player,
-        AggregationType.Sum,
+        0,
+        decimal.MaxValue,
         FaultTolerance.Zero,
-        "Goals"
+        "Goals",
+        PeriodSecondTeamPlayerDimension
     );
 
     public static readonly MetricDefinition Assists = new
     (
         minValue: 0,
         maxValue: decimal.MaxValue,
-        ScopeType.Player,
-        AggregationType.Sum,
         FaultTolerance.Zero,
-        "Assists"
+        "Assists",
+        PeriodSecondTeamPlayerDimension
     );
 
     public static readonly MetricDefinition YellowCards = new
     (
         minValue: 0,
         maxValue: 2,
-        ScopeType.Player,
-        AggregationType.Sum,
         FaultTolerance.Zero,
-        "Yellow Cards"
+        "Yellow Cards",
+        PeriodSecondTeamPlayerDimension
     );
 
     public static readonly MetricDefinition RedCards = new
     (
         minValue: 0,
         maxValue: 1,
-        ScopeType.Player,
-        AggregationType.Sum,
         FaultTolerance.Zero,
-        "Red Cards"
+        "Red Cards",
+        PeriodSecondTeamPlayerDimension
     );
 
     public static readonly MetricDefinition Corners = new
     (
         minValue: 0,
         maxValue: decimal.MaxValue,
-        ScopeType.Player,
-        AggregationType.Sum,
         FaultTolerance.Zero,
-        "Corners"
+        "Corners",
+        PeriodSecondTeamPlayerDimension
     );
 
     public static readonly MetricDefinition Penalties = new
     (
         minValue: 0,
         maxValue: decimal.MaxValue,
-        ScopeType.Player,
-        AggregationType.Sum,
         FaultTolerance.Zero,
-        "Penalties"
+        "Penalties",
+        PeriodSecondTeamPlayerDimension
     );
 
     public static readonly MetricDefinition Period = new
     (
         minValue: 0,
         maxValue: 6,
-        ScopeType.Event,
-        AggregationType.None,
         FaultTolerance.Zero,
-        "Period"
-    );
-
-    public static readonly MetricDefinition IsWinner = new
-    (
-        minValue: 0,
-        maxValue: 1,
-        ScopeType.Team,
-        AggregationType.None,
-        FaultTolerance.Zero,
-        "IsWinner"
+        "Period",
+        new DimensionDefinition(ImmutableDictionary<string, Type>.Empty)
     );
 
     public static readonly MetricDefinition[] AllMetrics =
@@ -93,7 +88,6 @@ public static class Soccer
         RedCards,
         Corners,
         Penalties,
-        Period,
-        IsWinner
+        Period
     ];
 }

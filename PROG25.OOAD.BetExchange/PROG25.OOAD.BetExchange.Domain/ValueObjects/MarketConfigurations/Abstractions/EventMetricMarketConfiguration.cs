@@ -5,7 +5,12 @@ namespace PROG25.OOAD.BetExchange.Domain.ValueObjects.MarketConfigurations.Abstr
 
 public abstract record EventMetricMarketConfiguration
 {
-    public EventMetricMarketConfiguration(MetricDefinition metric, EventDataTimestamp timestamp, string name)
+    public EventMetricMarketConfiguration
+    (
+        MetricDefinition metric,
+        EventDataTimestamp timestamp,
+        string name
+    )
     {
         if (string.IsNullOrWhiteSpace(name))
         {

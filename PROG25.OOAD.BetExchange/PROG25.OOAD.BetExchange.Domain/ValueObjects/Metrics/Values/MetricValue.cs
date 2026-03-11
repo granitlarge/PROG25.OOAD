@@ -1,22 +1,34 @@
+using System.Collections.Immutable;
+using PROG25.OOAD.BetExchange.Domain.ValueObjects.Dimensions;
 using PROG25.OOAD.BetExchange.Domain.ValueObjects.Metrics.Definitions;
-using PROG25.OOAD.BetExchange.Domain.ValueObjects.Scopes;
 
 namespace PROG25.OOAD.BetExchange.Domain.ValueObjects.Metrics.Values;
 
 public record MetricValue
 {
-    public MetricValue(Scope scope, MetricDefinition metric, decimal value)
+    public MetricValue
+    (
+        DimensionValue dimension,
+        MetricDefinition definition,
+        decimal value
+    )
     {
-        if (!metric.IsValidMetricValue(value) || !metric.IsValidScope(scope))
+        if (!definition.IsValidMetricValue(value))
         {
-            throw new ArgumentException("Value or scope is not valid for the given metric definition.", nameof(value));
+            throw new ArgumentException($"{nameof(value)} is an invalid metric value for metric {definition.Name}");
         }
-        Scope = scope;
-        Metric = metric;
+
+        if (!definition.IsValidDimensionValue(dimension))
+        {
+            throw new ArgumentException("Invalid dimension value given metric definition");
+        }
+
+        Dimension = dimension;
+        Definition = definition;
         Value = value;
     }
 
-    public Scope Scope { get; }
-    public MetricDefinition Metric { get; }
+    public DimensionValue Dimension { get; }
+    public MetricDefinition Definition { get; }
     public decimal Value { get; }
 }

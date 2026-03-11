@@ -1,11 +1,10 @@
 using PROG25.OOAD.BetExchange.Domain.ValueObjects;
-using PROG25.OOAD.BetExchange.Domain.ValueObjects.Oddss;
 
 namespace PROG25.OOAD.BetExchange.Domain.Entities.Outcomes;
 
 public class Outcome
 {
-    public Outcome(string name, Odds odds)
+    public Outcome(string name)
     {
         if (!CanChangeNameTo(name))
         {
@@ -14,12 +13,10 @@ public class Outcome
 
         Id = new OutcomeId();
         Name = name;
-        Odds = odds;
     }
 
     public OutcomeId Id { get; }
     public string Name { get; private set; }
-    public Odds Odds { get; private set; }
 
     public void ChangeName(string newName)
     {
@@ -29,11 +26,6 @@ public class Outcome
         }
 
         Name = newName;
-    }
-
-    public void ChangeOdds(Odds odds)
-    {
-        Odds = odds;
     }
 
     private static bool CanChangeNameTo(string name)

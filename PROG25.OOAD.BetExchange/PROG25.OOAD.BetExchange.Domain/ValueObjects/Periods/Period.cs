@@ -1,6 +1,5 @@
 using System.Collections.Immutable;
 using PROG25.OOAD.BetExchange.Domain.ValueObjects.Metrics.Definitions;
-using PROG25.OOAD.BetExchange.Domain.ValueObjects.Scopes;
 using PROG25.OOAD.BetExchange.Domain.ValueObjects.Timestamps.Abstractions;
 
 namespace PROG25.OOAD.BetExchange.Domain.ValueObjects.Periods;
@@ -45,14 +44,14 @@ public record Period
 
 public record WinnerRule
 {
-    public WinnerRule(MetricDefinition metric, ScopeType scopeType, OptimumType optimumType)
+    public WinnerRule(MetricDefinition metric, List<string> dimensionNames, OptimumType optimumType)
     {
         Metric = metric;
-        ScopeType = scopeType;
+        DimensionNames = dimensionNames;
         OptimumType = optimumType;
     }
 
     public MetricDefinition Metric { get; }
-    public ScopeType ScopeType { get; }
+    public List<string> DimensionNames { get; }
     public OptimumType OptimumType { get; }
 }
