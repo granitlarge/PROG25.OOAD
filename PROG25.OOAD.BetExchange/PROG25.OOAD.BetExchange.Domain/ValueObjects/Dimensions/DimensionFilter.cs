@@ -1,8 +1,9 @@
 using System.Collections.Immutable;
+using PROG25.OOAD.BetExchange.Domain.Extensions;
 
 namespace PROG25.OOAD.BetExchange.Domain.ValueObjects.Dimensions;
 
-public record DimensionFilter
+public class DimensionFilter : IEquatable<DimensionFilter>
 {
     public DimensionFilter
     (
@@ -31,6 +32,39 @@ public record DimensionFilter
         Definition = definition;
     }
 
+    private int? _hashCode;
+
     public ImmutableDictionary<string, object> Value { get; }
     public DimensionDefinition Definition { get; }
+
+    public override bool Equals(object? obj)
+    {
+        return Equals(obj as DimensionFilter);
+    }
+
+    public bool Equals(DimensionFilter? df)
+    {
+        if (df is null)
+            return false;
+
+        return Definition == df.Definition &&
+               Value.Count == df.Value.Count &&
+               Value.All(df.Value.Contains) &&
+               df.Value.All(Value.Contains);
+    }
+
+    public override int GetHashCode()
+    {
+        return _hashCode ??= HashCode.Combine(Definition, Value.CalculateHashCode());
+    }
+
+    public static bool operator ==(DimensionFilter left, DimensionFilter right)
+    {
+        return left.GetHashCode() == right.GetHashCode() && left.Equals(right);
+    }
+
+    public static bool operator !=(DimensionFilter left, DimensionFilter right)
+    {
+        return !(left == right);
+    }
 }

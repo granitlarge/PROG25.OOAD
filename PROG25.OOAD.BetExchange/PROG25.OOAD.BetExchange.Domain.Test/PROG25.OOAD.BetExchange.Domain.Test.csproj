@@ -20,4 +20,8 @@
     <Using Include="NUnit.Framework" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\PROG25.OOAD.BetExchange.Domain\PROG25.OOAD.BetExchange.Domain.csproj" />
+  </ItemGroup>
+
 </Project>

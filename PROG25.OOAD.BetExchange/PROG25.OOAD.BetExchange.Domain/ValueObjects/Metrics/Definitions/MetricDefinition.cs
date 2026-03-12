@@ -2,6 +2,7 @@ using System.Collections.Immutable;
 using System.Data;
 using PROG25.OOAD.BetExchange.Domain.ValueObjects.Dimensions;
 using PROG25.OOAD.BetExchange.Domain.ValueObjects.Metrics.Values;
+using PROG25.OOAD.BetExchange.Domain.ValueObjects.Utility;
 
 namespace PROG25.OOAD.BetExchange.Domain.ValueObjects.Metrics.Definitions;
 
@@ -78,7 +79,7 @@ public record MetricDefinition
             throw new ArgumentException($"This metric definition cannot be used to filter metric values of other metric definitions.");
         }
 
-        if (filters.Any(dq => dq.Definition != Dimension))
+        if (filters.Any(f => f.Definition != Dimension))
         {
             throw new ArgumentException($"A dimension query was specified that is invalid for this metric definition");
         }
@@ -93,53 +94,31 @@ public record MetricDefinition
         {
             foreach (var metricValue in metricValues)
             {
-                var relevantDimensionQueries = filters.Where(dq => metricValue.Dimension.Definition == dq.Definition).ToList();
-                if (relevantDimensionQueries.Count == 0)
-                    continue;
-
-                var relevantDimensionQueriesGroupedByType = relevantDimensionQueries.GroupBy(rdq => rdq.Definition);
-                foreach (var group in relevantDimensionQueriesGroupedByType)
+                var isRelevantMetric = filters.Any(filter => filter.Value.All(dqv => metricValue.Dimension.Value.Contains(dqv)));
+                if (isRelevantMetric)
                 {
-                    // If the metric agrees with ANY of the dimension filters, yield it
-                    var isRelevantMetric = group.Any(dimensionQuery => dimensionQuery.Value.All(dqv => metricValue.Dimension.Value.Contains(dqv)));
-                    if (isRelevantMetric)
-                    {
-                        hashSet.Add(metricValue);
-                    }
+                    hashSet.Add(metricValue);
                 }
             }
         }
         return [.. hashSet];
     }
 
-    public ImmutableHashSet<(DimensionFilter Key, ImmutableHashSet<MetricValue> Values)> GroupBy(List<string> dimensionNames, ImmutableHashSet<MetricValue> metricValues)
+    public ImmutableHashSet<(DimensionFilter Key, ImmutableHashSet<MetricValue> Values)> GroupBy(ImmutableHashSet<string> dimensionNames, ImmutableHashSet<MetricValue> metricValues)
     {
         if (metricValues.Any(mv => mv.Definition != this))
         {
             throw new ArgumentException($"This metric definition cannot be used to group metric values of other metric definitions.");
         }
 
-        return
-                [.. metricValues
-                    .Select(mv => (MetricValue: mv, DimensionValue: mv.Dimension.Value.Where(kv => dimensionNames.Any(dn => kv.Key == dn)).OrderBy(kv => kv.Key).Select(kv => kv.Value).ToList()))
-#warning Does this grouping really work?
-                    .GroupBy(metricValueAndDimensionValue => string.Join("#", metricValueAndDimensionValue.DimensionValue))
-                    .Select
-                    (
-                        metricValueAndDimensionValue =>
-                        (
-                            new DimensionFilter
-                            (
-                                dimensionNames
-                                .OrderBy(dn => dn)
-                                .Select((value, index) => new KeyValuePair<string, object>(dimensionNames[index], metricValueAndDimensionValue.First().DimensionValue[index]))
-                                .ToDictionary(kv => kv.Key, kv => kv.Value)
-                                .ToImmutableDictionary(),
-                                metricValueAndDimensionValue.First().MetricValue.Dimension.Definition
-                            ),
-                            metricValueAndDimensionValue.Select(x => x.MetricValue).ToImmutableHashSet()
-                        )
-                    )];
+        if (dimensionNames.Count == 0)
+        {
+            return [(new DimensionFilter(ImmutableDictionary<string, object>.Empty, Dimension), metricValues)];
+        }
+
+        return [.. metricValues
+            .GroupBy(mv => new DynamicGroupingKey(dimensionNames.ToImmutableDictionary(dn => dn, dn => mv.Dimension.Value[dn])))
+            .Select(group => (new DimensionFilter(group.Key.Values, Dimension), group.ToImmutableHashSet()))];
     }
 
     public ComparisonResult Compare(decimal firstValue, decimal secondValue)

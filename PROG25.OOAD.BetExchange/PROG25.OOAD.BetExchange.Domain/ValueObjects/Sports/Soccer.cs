@@ -6,6 +6,7 @@ namespace PROG25.OOAD.BetExchange.Domain.ValueObjects.Sports;
 
 public static class Soccer
 {
+    private static readonly DimensionDefinition EmptyDimension = new(ImmutableDictionary<string, Type>.Empty);
     private static readonly DimensionDefinition PeriodSecondTeamPlayerDimension = new
     (
         new Dictionary<string, Type>
@@ -83,7 +84,7 @@ public static class Soccer
         maxValue: 6,
         FaultTolerance.Zero,
         "Period",
-        new DimensionDefinition(ImmutableDictionary<string, Type>.Empty),
+        EmptyDimension,
         Aggregation.None
     );
 

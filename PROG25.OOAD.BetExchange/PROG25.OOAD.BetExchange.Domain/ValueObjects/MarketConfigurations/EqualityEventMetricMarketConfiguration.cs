@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using PROG25.OOAD.BetExchange.Domain.ValueObjects.MarketConfigurations.Abstractions;
 using PROG25.OOAD.BetExchange.Domain.ValueObjects.Metrics.Definitions;
 using PROG25.OOAD.BetExchange.Domain.ValueObjects.Timestamps.Abstractions;
@@ -9,7 +10,7 @@ public record EqualityEventMetricMarketConfiguration : EventMarketConfiguration
     public EqualityEventMetricMarketConfiguration
     (
         MetricDefinition metric,
-        List<string> dimensionNames,
+        ImmutableHashSet<string> dimensionNames,
         EventDataTimestamp timestamp,
         string name
     ) : base(timestamp, name)
@@ -28,6 +29,6 @@ public record EqualityEventMetricMarketConfiguration : EventMarketConfiguration
         MetricDefinition = metric;
     }
 
-    public List<string> DimensionNames { get; }
+    public ImmutableHashSet<string> DimensionNames { get; }
     public MetricDefinition MetricDefinition {get;}
 }
