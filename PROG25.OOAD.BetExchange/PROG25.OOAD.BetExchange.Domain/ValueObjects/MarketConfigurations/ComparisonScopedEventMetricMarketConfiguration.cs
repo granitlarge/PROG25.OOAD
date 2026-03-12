@@ -18,7 +18,6 @@ public record ComparisonEventMetricMarketConfiguration : EventMarketConfiguratio
         Expression = expression;
     }
 
-    public decimal ReferenceValue { get; }
     public ComparisonResult ExpectedComparisonResult { get; }
     public ComparisonMetricExpression Expression { get; }
 }
