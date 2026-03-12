@@ -5,7 +5,7 @@ using PROG25.OOAD.BetExchange.Domain.ValueObjects.Timestamps.Abstractions;
 
 namespace PROG25.OOAD.BetExchange.Domain.ValueObjects.MarketConfigurations;
 
-public record OptimalDimensionEventMetricMarketConfiguration : EventMetricMarketConfiguration
+public record OptimalDimensionEventMetricMarketConfiguration : EventMarketConfiguration
 {
     public OptimalDimensionEventMetricMarketConfiguration
     (
@@ -14,16 +14,20 @@ public record OptimalDimensionEventMetricMarketConfiguration : EventMetricMarket
         EventDataTimestamp timestamp,
         string name,
         OptimumType optimumType
-    ) : base(metric, timestamp, name)
+    ) : base(timestamp, name)
     {
         OptimumType = optimumType;
-        if (!metric.IsValidDimensionQuery(dimension))
+
+        if (!metric.IsValidDimensionFilter(dimension))
         {
             throw new ArgumentException($"Dimension '{dimension}' is not valid for the metric.", nameof(dimension));
         }
+
         Dimension = dimension;
+        MetricDefinition = metric;
     }
 
     public OptimumType OptimumType { get; }
     public DimensionFilter Dimension { get; }
+    public MetricDefinition MetricDefinition { get; }
 }

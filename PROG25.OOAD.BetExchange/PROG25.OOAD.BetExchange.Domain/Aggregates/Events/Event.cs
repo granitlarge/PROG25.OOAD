@@ -40,12 +40,12 @@ public abstract class Event
         return new EqualityEventMetricMarket(Id, Data, yesOutcome, noOutcome, configuration);
     }
 
-    public OptimalEventMetricMarket CreateMarket(YesNoOutcome yesOutcome, YesNoOutcome noOutcome, OptimalDimensionEventMetricMarketConfiguration configuration)
+    public OptimalDimensionEventMetricMarket CreateMarket(YesNoOutcome yesOutcome, YesNoOutcome noOutcome, OptimalDimensionEventMetricMarketConfiguration configuration)
     {
-        return new OptimalEventMetricMarket(Id, Data, yesOutcome, noOutcome, configuration);
+        return new OptimalDimensionEventMetricMarket(Id, Data, yesOutcome, noOutcome, configuration);
     }
 
-    public ComparisonEventMetricMarket CreateMarket(YesNoOutcome yesOutcome, YesNoOutcome noOutcome, ComparisonScopedEventMetricMarketConfiguration configuration)
+    public ComparisonEventMetricMarket CreateMarket(YesNoOutcome yesOutcome, YesNoOutcome noOutcome, ComparisonEventMetricMarketConfiguration configuration)
     {
         return new ComparisonEventMetricMarket(Id, Data, yesOutcome, noOutcome, configuration);
     }

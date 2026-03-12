@@ -23,7 +23,8 @@ public static class Soccer
         decimal.MaxValue,
         FaultTolerance.Zero,
         "Goals",
-        PeriodSecondTeamPlayerDimension
+        PeriodSecondTeamPlayerDimension,
+        Aggregation.Sum
     );
 
     public static readonly MetricDefinition Assists = new
@@ -32,7 +33,8 @@ public static class Soccer
         maxValue: decimal.MaxValue,
         FaultTolerance.Zero,
         "Assists",
-        PeriodSecondTeamPlayerDimension
+        PeriodSecondTeamPlayerDimension,
+        Aggregation.Sum
     );
 
     public static readonly MetricDefinition YellowCards = new
@@ -41,7 +43,8 @@ public static class Soccer
         maxValue: 2,
         FaultTolerance.Zero,
         "Yellow Cards",
-        PeriodSecondTeamPlayerDimension
+        PeriodSecondTeamPlayerDimension,
+        Aggregation.Sum
     );
 
     public static readonly MetricDefinition RedCards = new
@@ -50,7 +53,8 @@ public static class Soccer
         maxValue: 1,
         FaultTolerance.Zero,
         "Red Cards",
-        PeriodSecondTeamPlayerDimension
+        PeriodSecondTeamPlayerDimension,
+        Aggregation.Sum
     );
 
     public static readonly MetricDefinition Corners = new
@@ -59,7 +63,8 @@ public static class Soccer
         maxValue: decimal.MaxValue,
         FaultTolerance.Zero,
         "Corners",
-        PeriodSecondTeamPlayerDimension
+        PeriodSecondTeamPlayerDimension,
+        Aggregation.Sum
     );
 
     public static readonly MetricDefinition Penalties = new
@@ -68,7 +73,8 @@ public static class Soccer
         maxValue: decimal.MaxValue,
         FaultTolerance.Zero,
         "Penalties",
-        PeriodSecondTeamPlayerDimension
+        PeriodSecondTeamPlayerDimension,
+        Aggregation.Sum
     );
 
     public static readonly MetricDefinition Period = new
@@ -77,7 +83,8 @@ public static class Soccer
         maxValue: 6,
         FaultTolerance.Zero,
         "Period",
-        new DimensionDefinition(ImmutableDictionary<string, Type>.Empty)
+        new DimensionDefinition(ImmutableDictionary<string, Type>.Empty),
+        Aggregation.None
     );
 
     public static readonly MetricDefinition[] AllMetrics =

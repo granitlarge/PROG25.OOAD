@@ -8,10 +8,10 @@ namespace PROG25.OOAD.BetExchange.Domain.Aggregates.Markets;
 
 /// <summary>
 /// Market that settles based on whether a specific dimension combination's metric value is optimal (maximum or minimum) compared to all other dimension combinations for the same metric.
-/// </summary>
-public class OptimalEventMetricMarket : EventMetricMarket
+/// </summary> 
+public class OptimalDimensionEventMetricMarket : EventMetricMarket
 {
-    internal OptimalEventMetricMarket
+    internal OptimalDimensionEventMetricMarket
     (
         EventId eventId,
         EventData eventData,
@@ -47,17 +47,24 @@ public class OptimalEventMetricMarket : EventMetricMarket
             return settlementAttemptStatus;
         }
 
-        var specificDimensionCombinationMetric = eventData.Metrics.Extract([Configuration.Dimension], Configuration.Metric);
+        var metricValues = eventData.Metrics.GetByDefinition(Configuration.MetricDefinition);
 
-        var metricsForAllDimensionsExceptSpecificOne = eventData.Metrics
-        .ExtractAll([.. Configuration.Dimension.Value.Select(kv => kv.Key).Distinct()], Configuration.Metric)
-        .Where(mv => mv.Query != Configuration.Dimension)
-        .ToList();
+        // Fetch the metric value for the specific dimension
+        var specificDimensionMetricValue = Configuration.MetricDefinition.Aggregate(Configuration.MetricDefinition.Filter([Configuration.Dimension], metricValues));
+
+        // Fetch the metric value for all other combinations of the dimension
+        var metricsForAllDimensionsExceptSpecificOne = Configuration.MetricDefinition
+            .GroupBy([.. Configuration.Dimension.Value.Select(kv => kv.Key).Distinct()], metricValues)
+            .Select(group => (group.Key, AggregatedMetricValue: Configuration.MetricDefinition.Aggregate(group.Values)))
+#warning does this comparison work?
+            .Where(group => group.Key != Configuration.Dimension)
+            .Select(group => group.AggregatedMetricValue)
+            .ToList();
 
         var isOptimal = Configuration.OptimumType switch
         {
-            OptimumType.Maximum => metricsForAllDimensionsExceptSpecificOne.Max(e => e.Value) < specificDimensionCombinationMetric,
-            OptimumType.Minimum => metricsForAllDimensionsExceptSpecificOne.Min(e => e.Value) > specificDimensionCombinationMetric,
+            OptimumType.Maximum => metricsForAllDimensionsExceptSpecificOne.Max() < specificDimensionMetricValue,
+            OptimumType.Minimum => metricsForAllDimensionsExceptSpecificOne.Min() > specificDimensionMetricValue,
             _ => throw new InvalidOperationException("Unsupported optimality type.")
         };
 

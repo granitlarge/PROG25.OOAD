@@ -16,7 +16,8 @@ public record MetricDefinition
         decimal maxValue,
         FaultTolerance faultTolerance,
         string name,
-        DimensionDefinition dimension
+        DimensionDefinition dimension,
+        Aggregation aggregation
     )
     {
         if (string.IsNullOrWhiteSpace(name))
@@ -29,6 +30,7 @@ public record MetricDefinition
         FaultTolerance = faultTolerance;
         Name = name;
         Dimension = dimension;
+        Aggregation = aggregation;
     }
 
     private decimal MinValue { get; }
@@ -36,6 +38,8 @@ public record MetricDefinition
     private decimal MaxValueValue { get; }
 
     private FaultTolerance FaultTolerance { get; }
+
+    private Aggregation Aggregation { get; }
 
     public DimensionDefinition Dimension { get; }
 
@@ -47,33 +51,49 @@ public record MetricDefinition
         return isWithinBounds;
     }
 
-    /// <summary>
-    /// Filters  the given metric values based on the given dimension queries. 
-    /// A metric value is considered relevant for a dimension query if it matches ALL criteria specified in the dimension query. 
-    /// If multiple dimension queries are given, a metric value is considered relevant if it matches ANY of the dimension queries.
-    /// </summary>
-    public IEnumerable<MetricValue> Filter(ImmutableHashSet<DimensionFilter> dimensionQueries, ImmutableHashSet<MetricValue> metricValues)
+    public decimal Aggregate(ImmutableHashSet<MetricValue> metricValues)
     {
         if (metricValues.Any(mv => mv.Definition != this))
         {
-            throw new ArgumentException($"This metric definition cannot be used to filter metric values of other metric definition.");
+            throw new ArgumentException("This metric definition cannot be used to aggregate metric values of other metric definitions.");
         }
 
-        if (dimensionQueries.Any(dq => dq.Definition != Dimension))
+        return Aggregation switch
+        {
+            Aggregation.None => throw new InvalidOperationException("This metric definition cannot be aggregated"),
+            Aggregation.Sum => metricValues.Sum(mv => mv.Value),
+            _ => throw new NotImplementedException($"{Enum.GetName(Aggregation)!}"),
+        };
+    }
+
+    /// <summary>
+    /// Filters  the given metric values based on the given dimension filters. 
+    /// A metric value is considered relevant for a dimension filter if it matches ALL criteria specified in the dimension filter. 
+    /// If multiple dimension filters are given, a metric value is considered relevant if it matches ANY of the dimension filters.
+    /// </summary>
+    public ImmutableHashSet<MetricValue> Filter(ImmutableHashSet<DimensionFilter> filters, ImmutableHashSet<MetricValue> metricValues)
+    {
+        if (metricValues.Any(mv => mv.Definition != this))
+        {
+            throw new ArgumentException($"This metric definition cannot be used to filter metric values of other metric definitions.");
+        }
+
+        if (filters.Any(dq => dq.Definition != Dimension))
         {
             throw new ArgumentException($"A dimension query was specified that is invalid for this metric definition");
         }
 
-        if (dimensionQueries.Count == 0)
+        var hashSet = new HashSet<MetricValue>();
+        if (filters.Count == 0)
         {
             foreach (var mv in metricValues)
-                yield return mv;
+                hashSet.Add(mv);
         }
         else
         {
             foreach (var metricValue in metricValues)
             {
-                var relevantDimensionQueries = dimensionQueries.Where(dq => metricValue.Dimension.Definition == dq.Definition).ToList();
+                var relevantDimensionQueries = filters.Where(dq => metricValue.Dimension.Definition == dq.Definition).ToList();
                 if (relevantDimensionQueries.Count == 0)
                     continue;
 
@@ -84,11 +104,42 @@ public record MetricDefinition
                     var isRelevantMetric = group.Any(dimensionQuery => dimensionQuery.Value.All(dqv => metricValue.Dimension.Value.Contains(dqv)));
                     if (isRelevantMetric)
                     {
-                        yield return metricValue;
+                        hashSet.Add(metricValue);
                     }
                 }
             }
         }
+        return [.. hashSet];
+    }
+
+    public ImmutableHashSet<(DimensionFilter Key, ImmutableHashSet<MetricValue> Values)> GroupBy(List<string> dimensionNames, ImmutableHashSet<MetricValue> metricValues)
+    {
+        if (metricValues.Any(mv => mv.Definition != this))
+        {
+            throw new ArgumentException($"This metric definition cannot be used to group metric values of other metric definitions.");
+        }
+
+        return
+                [.. metricValues
+                    .Select(mv => (MetricValue: mv, DimensionValue: mv.Dimension.Value.Where(kv => dimensionNames.Any(dn => kv.Key == dn)).OrderBy(kv => kv.Key).Select(kv => kv.Value).ToList()))
+#warning Does this grouping really work?
+                    .GroupBy(metricValueAndDimensionValue => string.Join("#", metricValueAndDimensionValue.DimensionValue))
+                    .Select
+                    (
+                        metricValueAndDimensionValue =>
+                        (
+                            new DimensionFilter
+                            (
+                                dimensionNames
+                                .OrderBy(dn => dn)
+                                .Select((value, index) => new KeyValuePair<string, object>(dimensionNames[index], metricValueAndDimensionValue.First().DimensionValue[index]))
+                                .ToDictionary(kv => kv.Key, kv => kv.Value)
+                                .ToImmutableDictionary(),
+                                metricValueAndDimensionValue.First().MetricValue.Dimension.Definition
+                            ),
+                            metricValueAndDimensionValue.Select(x => x.MetricValue).ToImmutableHashSet()
+                        )
+                    )];
     }
 
     public ComparisonResult Compare(decimal firstValue, decimal secondValue)
@@ -106,8 +157,14 @@ public record MetricDefinition
         return Dimension == dv.Definition;
     }
 
-    internal bool IsValidDimensionQuery(DimensionFilter dq)
+    internal bool IsValidDimensionFilter(DimensionFilter dq)
     {
         return dq.Definition == Dimension;
     }
+}
+
+public enum Aggregation
+{
+    None,
+    Sum
 }

@@ -4,7 +4,7 @@ using PROG25.OOAD.BetExchange.Domain.ValueObjects.Timestamps.Abstractions;
 
 namespace PROG25.OOAD.BetExchange.Domain.ValueObjects.MarketConfigurations;
 
-public record EqualityEventMetricMarketConfiguration : EventMetricMarketConfiguration
+public record EqualityEventMetricMarketConfiguration : EventMarketConfiguration
 {
     public EqualityEventMetricMarketConfiguration
     (
@@ -12,7 +12,7 @@ public record EqualityEventMetricMarketConfiguration : EventMetricMarketConfigur
         List<string> dimensionNames,
         EventDataTimestamp timestamp,
         string name
-    ) : base(metric, timestamp, name)
+    ) : base(timestamp, name)
     {
         if (dimensionNames.Count == 0)
         {
@@ -25,7 +25,9 @@ public record EqualityEventMetricMarketConfiguration : EventMetricMarketConfigur
         }
 
         DimensionNames = dimensionNames;
+        MetricDefinition = metric;
     }
 
     public List<string> DimensionNames { get; }
+    public MetricDefinition MetricDefinition {get;}
 }

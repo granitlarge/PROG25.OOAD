@@ -16,7 +16,7 @@ public abstract class EventMetricMarket
     (
         EventId eventId,
         EventData eventData,
-        EventMetricMarketConfiguration configuration,
+        EventMarketConfiguration configuration,
         ISet<Outcome> outcomes
     )
     {
@@ -30,11 +30,6 @@ public abstract class EventMetricMarket
             throw new InvalidOperationException("Cannot create an event metric market for an event that has already passed the market's timestamp");
         }
 
-        if (!eventData.Metrics.IsSupportedMetric(configuration.Metric))
-        {
-            throw new ArgumentException("The event does not support the metric required by the market configuration.", nameof(configuration));
-        }
-
         _outcomes = [.. outcomes];
         Id = new MarketId();
         EventId = eventId;
@@ -44,7 +39,7 @@ public abstract class EventMetricMarket
 
     public MarketId Id { get; }
     public EventId EventId { get; }
-    public virtual EventMetricMarketConfiguration Configuration { get; }
+    public virtual EventMarketConfiguration Configuration { get; }
     public virtual ImmutableHashSet<Outcome> Outcomes => _outcomes;
     public OutcomeId? WinningOutcomeId { get; private set; }
     public MarketStatus Status { get; private set; }

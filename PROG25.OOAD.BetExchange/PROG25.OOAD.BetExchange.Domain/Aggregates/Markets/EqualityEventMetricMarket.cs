@@ -7,9 +7,8 @@ using PROG25.OOAD.BetExchange.Domain.ValueObjects.MarketConfigurations;
 namespace PROG25.OOAD.BetExchange.Domain.Aggregates.Markets;
 
 /// <summary>
-/// A market that settles based on whether a specified metric has the same value across all scopes of a certain type at the time of settlement. 
-/// For example, this could be used to create a market that settles YES if all teams have the same number of goals at the end of the match, and NO otherwise.
-/// I.e., it can be used to implement draws.
+/// A market that settles based on whether all extracted metric values are equal for a specific metric and set of dimensions. 
+/// The market configuration specifies the metric and dimensions to extract, and the market settles to YES if all extracted values are the same, and NO otherwise.
 /// </summary> 
 public class EqualityEventMetricMarket : EventMetricMarket
 {
@@ -51,7 +50,13 @@ public class EqualityEventMetricMarket : EventMetricMarket
             return settlementAttemptStatus;
         }
 
-        var win = eventData.Metrics.ExtractAll(Configuration.DimensionNames, Configuration.Metric).Select(e => e.Value).Distinct().Count() == 1;
+        var metricValues = eventData.Metrics.GetByDefinition(Configuration.MetricDefinition);
+        var win = Configuration.MetricDefinition
+                        .GroupBy(Configuration.DimensionNames, metricValues)
+                        .Select(g => Configuration.MetricDefinition.Aggregate(g.Values))
+                        .Distinct()
+                        .Count() == 1;
+
         Settle(win ? YesOutcome.Id : NoOutcome.Id);
         return SettlementAttemptStatus.Completed;
     }

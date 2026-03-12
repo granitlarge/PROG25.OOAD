@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using PROG25.OOAD.BetExchange.Domain.ValueObjects.Events;
+using PROG25.OOAD.BetExchange.Domain.ValueObjects.Metrics;
 using PROG25.OOAD.BetExchange.Domain.ValueObjects.Sports;
 using PROG25.OOAD.BetExchange.Domain.ValueObjects.Timestamps;
 
@@ -17,24 +18,60 @@ public record SoccerPeriodRules : PeriodRules
     private static readonly Period FirstHalf = new
     (
         "First half",
-        new EventMetricChangedComparedToReferenceValueTimestamp([], Soccer.Period, 0, ComparisonResult.GreaterThan),
-        new EventMetricChangedComparedToReferenceValueTimestamp([], Soccer.Period, 1, ComparisonResult.GreaterThan),
+        new MetricExpressionChangedComparedToReferenceValueTimestamp
+        (
+            new FilteredAndAggregatedMetricExpression(Soccer.Period, []),
+            0,
+            ComparisonResult.GreaterThan,
+            FaultTolerance.Zero
+        ),
+        new MetricExpressionChangedComparedToReferenceValueTimestamp
+        (
+            new FilteredAndAggregatedMetricExpression(Soccer.Period, []),
+            1,
+            ComparisonResult.GreaterThan,
+            FaultTolerance.Zero
+        ),
         MaxiumTeamGoalsWinnerRule
     );
 
     private static readonly Period SecondHalf = new
     (
         "Second half",
-        new EventMetricChangedComparedToReferenceValueTimestamp([], Soccer.Period, 1, ComparisonResult.GreaterThan),
-        new EventMetricChangedComparedToReferenceValueTimestamp([], Soccer.Period, 2, ComparisonResult.GreaterThan),
+        new MetricExpressionChangedComparedToReferenceValueTimestamp
+        (
+            new FilteredAndAggregatedMetricExpression(Soccer.Period, []),
+            1,
+            ComparisonResult.GreaterThan,
+            FaultTolerance.Zero
+        ),
+        new MetricExpressionChangedComparedToReferenceValueTimestamp
+        (
+            new FilteredAndAggregatedMetricExpression(Soccer.Period, []),
+            2,
+            ComparisonResult.GreaterThan,
+            FaultTolerance.Zero
+        ),
         MaxiumTeamGoalsWinnerRule
     );
 
     private static Period FullTime(ImmutableHashSet<Period> children) => new
     (
         "Full time",
-        new EventMetricChangedComparedToReferenceValueTimestamp([], Soccer.Period, 0, ComparisonResult.GreaterThan),
-        new EventMetricChangedComparedToReferenceValueTimestamp([], Soccer.Period, 2, ComparisonResult.GreaterThan),
+        new MetricExpressionChangedComparedToReferenceValueTimestamp
+        (
+            new FilteredAndAggregatedMetricExpression(Soccer.Period, []),
+            0,
+            ComparisonResult.GreaterThan,
+            FaultTolerance.Zero
+        ),
+        new MetricExpressionChangedComparedToReferenceValueTimestamp
+        (
+            new FilteredAndAggregatedMetricExpression(Soccer.Period, []),
+            2,
+            ComparisonResult.GreaterThan,
+            FaultTolerance.Zero
+        ),
         MaxiumTeamGoalsWinnerRule,
         children
     );
@@ -42,8 +79,20 @@ public record SoccerPeriodRules : PeriodRules
     private static Period OT(ImmutableHashSet<Period> children) => new
     (
         "OT",
-        new EventMetricChangedComparedToReferenceValueTimestamp([], Soccer.Period, 2, ComparisonResult.GreaterThan),
-        new EventMetricChangedComparedToReferenceValueTimestamp([], Soccer.Period, 4, ComparisonResult.GreaterThan),
+        new MetricExpressionChangedComparedToReferenceValueTimestamp
+        (
+            new FilteredAndAggregatedMetricExpression(Soccer.Period, []),
+            2,
+            ComparisonResult.GreaterThan,
+            FaultTolerance.Zero
+        ),
+        new MetricExpressionChangedComparedToReferenceValueTimestamp
+        (
+            new FilteredAndAggregatedMetricExpression(Soccer.Period, []),
+            4,
+            ComparisonResult.GreaterThan,
+            FaultTolerance.Zero
+        ),
         MaxiumTeamGoalsWinnerRule,
         children
     );
@@ -51,31 +100,79 @@ public record SoccerPeriodRules : PeriodRules
     private static readonly Period OT1 = new
     (
         "OT 1",
-        new EventMetricChangedComparedToReferenceValueTimestamp([], Soccer.Period, 2, ComparisonResult.GreaterThan),
-        new EventMetricChangedComparedToReferenceValueTimestamp([], Soccer.Period, 3, ComparisonResult.GreaterThan),
+        new MetricExpressionChangedComparedToReferenceValueTimestamp
+        (
+            new FilteredAndAggregatedMetricExpression(Soccer.Period, []),
+            2,
+            ComparisonResult.GreaterThan,
+            FaultTolerance.Zero
+        ),
+        new MetricExpressionChangedComparedToReferenceValueTimestamp
+        (
+            new FilteredAndAggregatedMetricExpression(Soccer.Period, []),
+            3,
+            ComparisonResult.GreaterThan,
+            FaultTolerance.Zero
+        ),
         MaxiumTeamGoalsWinnerRule
     );
 
     private static readonly Period OT2 = new
     (
         "OT 2",
-        new EventMetricChangedComparedToReferenceValueTimestamp([], Soccer.Period, 3, ComparisonResult.GreaterThan),
-        new EventMetricChangedComparedToReferenceValueTimestamp([], Soccer.Period, 4, ComparisonResult.GreaterThan),
+        new MetricExpressionChangedComparedToReferenceValueTimestamp
+        (
+            new FilteredAndAggregatedMetricExpression(Soccer.Period, []),
+            3,
+            ComparisonResult.GreaterThan,
+            FaultTolerance.Zero
+        ),
+        new MetricExpressionChangedComparedToReferenceValueTimestamp
+        (
+            new FilteredAndAggregatedMetricExpression(Soccer.Period, []),
+            4,
+            ComparisonResult.GreaterThan,
+            FaultTolerance.Zero
+        ),
         MaxiumTeamGoalsWinnerRule
     );
 
     private static readonly Period Penalties = new
     (
         "Penalties",
-        new EventMetricChangedComparedToReferenceValueTimestamp([], Soccer.Period, 4, ComparisonResult.GreaterThan),
-        new EventMetricChangedComparedToReferenceValueTimestamp([], Soccer.Period, 5, ComparisonResult.GreaterThan)
+        new MetricExpressionChangedComparedToReferenceValueTimestamp
+        (
+            new FilteredAndAggregatedMetricExpression(Soccer.Period, []),
+            4,
+            ComparisonResult.GreaterThan,
+            FaultTolerance.Zero
+        ),
+        new MetricExpressionChangedComparedToReferenceValueTimestamp
+        (
+            new FilteredAndAggregatedMetricExpression(Soccer.Period, []),
+            5,
+            ComparisonResult.GreaterThan,
+            FaultTolerance.Zero
+        )
     );
 
     private static readonly Period SuddenDeath = new
     (
         "Sudden death",
-        new EventMetricChangedComparedToReferenceValueTimestamp([], Soccer.Period, 5, ComparisonResult.GreaterThan),
-        new EventMetricChangedComparedToReferenceValueTimestamp([], Soccer.Period, 6, ComparisonResult.GreaterThan)
+        new MetricExpressionChangedComparedToReferenceValueTimestamp
+        (
+            new FilteredAndAggregatedMetricExpression(Soccer.Period, []),
+            5,
+            ComparisonResult.GreaterThan,
+            FaultTolerance.Zero
+        ),
+        new MetricExpressionChangedComparedToReferenceValueTimestamp
+        (
+            new FilteredAndAggregatedMetricExpression(Soccer.Period, []),
+            6,
+            ComparisonResult.GreaterThan,
+            FaultTolerance.Zero
+        )
     );
 
     public override Period? GetPeriod(EventData eventData)
@@ -86,8 +183,13 @@ public record SoccerPeriodRules : PeriodRules
             return null;
         }
 
-        var period = eventData.Metrics.Extract([], Soccer.Period);
-        bool? isTied = period > 0 && period <= 4 ? eventData.Metrics.ExtractAll([Sport.TeamIdDimensionName], Soccer.Goals).Select(mv => mv.Value).Distinct().Count() == 1 : null;
+        var period = eventData.Metrics.GetByDefinition(Soccer.Period).Single().Value;
+        var goals = eventData.Metrics.GetByDefinition(Soccer.Goals);
+        bool? isTied = period > 0 && period <= 4 ? Soccer.Goals
+                                                         .GroupBy([Sport.TeamIdDimensionName], goals)
+                                                         .Select(g => Soccer.Goals.Aggregate(g.Values))
+                                                         .Distinct()
+                                                         .Count() == 1 : null;
 
         var firstHalf = period <= 1 ? FirstHalf : null;
         var secondHalf = period <= 2 ? SecondHalf : null;

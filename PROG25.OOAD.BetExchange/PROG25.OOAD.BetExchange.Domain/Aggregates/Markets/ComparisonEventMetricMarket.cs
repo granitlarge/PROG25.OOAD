@@ -6,6 +6,10 @@ using PROG25.OOAD.BetExchange.Domain.ValueObjects.MarketConfigurations;
 
 namespace PROG25.OOAD.BetExchange.Domain.Aggregates.Markets;
 
+/// <summary>
+/// A market that settles based on whether a specific metric value extracted for a specific set of dimensions meets a specified comparison condition against a reference value.
+/// The market configuration specifies the metric, dimensions, reference value, and expected comparison result. The market settles to YES if the comparison condition is met, and NO otherwise.
+/// </summary>
 public class ComparisonEventMetricMarket : EventMetricMarket
 {
     internal ComparisonEventMetricMarket
@@ -14,7 +18,7 @@ public class ComparisonEventMetricMarket : EventMetricMarket
         EventData eventData,
         YesNoOutcome yesOutcome,
         YesNoOutcome noOutcome,
-        ComparisonScopedEventMetricMarketConfiguration configuration
+        ComparisonEventMetricMarketConfiguration configuration
     ) : base(eventId, eventData, configuration, new HashSet<Outcome> { yesOutcome, noOutcome })
     {
         if (!yesOutcome.IsYes)
@@ -32,7 +36,7 @@ public class ComparisonEventMetricMarket : EventMetricMarket
         NoOutcome = noOutcome;
     }
 
-    public override ComparisonScopedEventMetricMarketConfiguration Configuration { get; }
+    public override ComparisonEventMetricMarketConfiguration Configuration { get; }
     public YesNoOutcome YesOutcome { get; }
     public YesNoOutcome NoOutcome { get; }
 
@@ -44,9 +48,8 @@ public class ComparisonEventMetricMarket : EventMetricMarket
             return settlementAttemptStatus;
         }
 
-        var value = eventData.Metrics.Extract(Configuration.Dimensions, Configuration.Metric);
-        var compareResult = Configuration.Metric.Compare(Configuration.ReferenceValue, value);
-        var isYes = compareResult == Configuration.ExpectedComparisonResult;
+        var value = Configuration.Expression.Evaluate(eventData.Metrics);
+        var isYes = value == Configuration.ExpectedComparisonResult;
 
         Settle(isYes ? YesOutcome.Id : NoOutcome.Id);
 
