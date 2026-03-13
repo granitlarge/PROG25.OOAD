@@ -14,7 +14,7 @@ public class EventType
     public EventType
     (
         EventTypeEnum eventType,
-        HashSet<MetricDefinition> supportedMetrics,
+        ImmutableHashSet<MetricDefinition> supportedMetrics,
         PeriodRules periodRules
     )
     {

@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using PROG25.OOAD.BetExchange.Domain.ValueObjects.Dimensions;
 using PROG25.OOAD.BetExchange.Domain.ValueObjects.Metrics.Definitions;
 using PROG25.OOAD.BetExchange.Domain.ValueObjects.Timestamps.Abstractions;
 
@@ -44,14 +45,22 @@ public record Period
 
 public record WinnerRule
 {
-    public WinnerRule(MetricDefinition metric, List<string> dimensionNames, OptimumType optimumType)
+    public WinnerRule
+    (
+        MetricDefinition metric,
+        ImmutableHashSet<string> dimensionNames,
+        ImmutableHashSet<DimensionFilter> dimensionFilters,
+        OptimumType optimumType
+    )
     {
         Metric = metric;
         DimensionNames = dimensionNames;
+        DimensionFilters = dimensionFilters;
         OptimumType = optimumType;
     }
 
     public MetricDefinition Metric { get; }
-    public List<string> DimensionNames { get; }
+    public ImmutableHashSet<string> DimensionNames { get; }
+    public ImmutableHashSet<DimensionFilter> DimensionFilters { get; }
     public OptimumType OptimumType { get; }
 }

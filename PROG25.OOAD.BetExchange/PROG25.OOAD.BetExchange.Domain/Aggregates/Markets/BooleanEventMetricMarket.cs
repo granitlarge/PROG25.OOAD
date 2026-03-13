@@ -6,19 +6,15 @@ using PROG25.OOAD.BetExchange.Domain.ValueObjects.MarketConfigurations;
 
 namespace PROG25.OOAD.BetExchange.Domain.Aggregates.Markets;
 
-/// <summary>
-/// A market that settles based on whether a specific metric value extracted for a specific set of dimensions meets a specified comparison condition against a reference value.
-/// The market configuration specifies the metric, dimensions, reference value, and expected comparison result. The market settles to YES if the comparison condition is met, and NO otherwise.
-/// </summary>
-public class ComparisonEventMetricMarket : EventMetricMarket
+public class BooleanEventMetricMarket : EventMetricMarket
 {
-    internal ComparisonEventMetricMarket
+    internal BooleanEventMetricMarket
     (
         EventId eventId,
         EventData eventData,
         YesNoOutcome yesOutcome,
         YesNoOutcome noOutcome,
-        ComparisonEventMetricMarketConfiguration configuration
+        BooleanEventMetricMarketConfiguration configuration
     ) : base(eventId, eventData, configuration, new HashSet<Outcome> { yesOutcome, noOutcome })
     {
         if (!yesOutcome.IsYes)
@@ -36,7 +32,7 @@ public class ComparisonEventMetricMarket : EventMetricMarket
         NoOutcome = noOutcome;
     }
 
-    public override ComparisonEventMetricMarketConfiguration Configuration { get; }
+    public override BooleanEventMetricMarketConfiguration Configuration { get; }
     public YesNoOutcome YesOutcome { get; }
     public YesNoOutcome NoOutcome { get; }
 
@@ -49,7 +45,7 @@ public class ComparisonEventMetricMarket : EventMetricMarket
         }
 
         var value = Configuration.Expression.Evaluate(eventData.Metrics);
-        var isYes = value == Configuration.ExpectedComparisonResult;
+        var isYes = value == Configuration.ExpectedExpressionResult;
 
         Settle(isYes ? YesOutcome.Id : NoOutcome.Id);
 

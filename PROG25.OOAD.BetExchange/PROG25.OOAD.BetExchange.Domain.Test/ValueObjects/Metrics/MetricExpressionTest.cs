@@ -2,8 +2,8 @@ using System.Collections.Immutable;
 using PROG25.OOAD.BetExchange.Domain.ValueObjects;
 using PROG25.OOAD.BetExchange.Domain.ValueObjects.Dimensions;
 using PROG25.OOAD.BetExchange.Domain.ValueObjects.Events;
-using PROG25.OOAD.BetExchange.Domain.ValueObjects.Metrics;
 using PROG25.OOAD.BetExchange.Domain.ValueObjects.Metrics.Definitions;
+using PROG25.OOAD.BetExchange.Domain.ValueObjects.Metrics.Expressions;
 using PROG25.OOAD.BetExchange.Domain.ValueObjects.Metrics.Values;
 
 namespace PROG25.OOAD.BetExchange.Domain.Test.ValueObjects.Metrics;

@@ -6,12 +6,13 @@ namespace PROG25.OOAD.BetExchange.Domain.ValueObjects.Sports;
 
 public static class Soccer
 {
-    private static readonly DimensionDefinition EmptyDimension = new(ImmutableDictionary<string, Type>.Empty);
+    public static readonly DimensionDefinition EmptyDimension = new(ImmutableDictionary<string, Type>.Empty);
+
     private static readonly DimensionDefinition PeriodSecondTeamPlayerDimension = new
     (
         new Dictionary<string, Type>
         {
-            [Sport.PeriodDimensionName] = typeof(string),
+            [Sport.PeriodDimensionName] = typeof(int),
             [Sport.SecondDimensionName] = typeof(int),
             [Sport.TeamIdDimensionName] = typeof(TeamId),
             [Sport.PlayerIdDimensionName] = typeof(PlayerId)
@@ -78,6 +79,26 @@ public static class Soccer
         Aggregation.Sum
     );
 
+    public static readonly MetricDefinition Freekicks = new
+    (
+        minValue: 0,
+        maxValue: decimal.MaxValue,
+        FaultTolerance.Zero,
+        "Freekicks",
+        PeriodSecondTeamPlayerDimension,
+        Aggregation.Sum
+    );
+
+    public static readonly MetricDefinition Offsides = new
+    (
+        minValue: 0,
+        maxValue: decimal.MaxValue,
+        FaultTolerance.Zero,
+        "Offsides",
+        PeriodSecondTeamPlayerDimension,
+        Aggregation.Sum
+    );
+
     public static readonly MetricDefinition Period = new
     (
         minValue: 0,
@@ -96,6 +117,8 @@ public static class Soccer
         RedCards,
         Corners,
         Penalties,
-        Period
+        Freekicks,
+        Offsides,
+        Period,
     ];
 }

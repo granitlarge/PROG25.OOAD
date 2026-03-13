@@ -6,7 +6,7 @@ public class Team
 {
     private readonly List<Player> _players = [];
 
-    private Team(string name, List<Player> players)
+    public Team(string name, List<Player> players)
     {
         EnsureIsValidName(name);
         if (players.Count < 1)

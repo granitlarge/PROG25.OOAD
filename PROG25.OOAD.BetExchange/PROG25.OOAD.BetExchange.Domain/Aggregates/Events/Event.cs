@@ -1,6 +1,5 @@
 using System.Collections.Immutable;
 using PROG25.OOAD.BetExchange.Domain.Aggregates.Markets;
-using PROG25.OOAD.BetExchange.Domain.Aggregates.Markets.Abstractions;
 using PROG25.OOAD.BetExchange.Domain.Entities;
 using PROG25.OOAD.BetExchange.Domain.Entities.Outcomes;
 using PROG25.OOAD.BetExchange.Domain.ValueObjects;
@@ -9,11 +8,11 @@ using PROG25.OOAD.BetExchange.Domain.ValueObjects.MarketConfigurations;
 
 namespace PROG25.OOAD.BetExchange.Domain.Aggregates.Events;
 
-public abstract class Event
+public class Event
 {
     private readonly ISet<Team> _teams;
 
-    protected Event
+    public Event
     (
         EventType eventType,
         ISet<Team> teams,
@@ -35,30 +34,8 @@ public abstract class Event
 
     public ImmutableHashSet<Team> Teams => [.. _teams];
 
-    public EqualityEventMetricMarket CreateMarket(YesNoOutcome yesOutcome, YesNoOutcome noOutcome, EqualityEventMetricMarketConfiguration configuration)
+    public BooleanEventMetricMarket CreateMarket(BooleanEventMetricMarketConfiguration configuration)
     {
-        return new EqualityEventMetricMarket(Id, Data, yesOutcome, noOutcome, configuration);
-    }
-
-    public OptimalDimensionEventMetricMarket CreateMarket(YesNoOutcome yesOutcome, YesNoOutcome noOutcome, OptimalDimensionEventMetricMarketConfiguration configuration)
-    {
-        return new OptimalDimensionEventMetricMarket(Id, Data, yesOutcome, noOutcome, configuration);
-    }
-
-    public ComparisonEventMetricMarket CreateMarket(YesNoOutcome yesOutcome, YesNoOutcome noOutcome, ComparisonEventMetricMarketConfiguration configuration)
-    {
-        return new ComparisonEventMetricMarket(Id, Data, yesOutcome, noOutcome, configuration);
-    }
-
-    public List<EventMetricMarket> GenerateMarkets()
-    {
-        var periodDefinition = Type.GetPeriod(Data);
-
-        if (periodDefinition is null)
-        {
-            return [];
-        }
-
-        return [];
+        return new BooleanEventMetricMarket(Id, Data, YesNoOutcome.Yes, YesNoOutcome.No, configuration);
     }
 }

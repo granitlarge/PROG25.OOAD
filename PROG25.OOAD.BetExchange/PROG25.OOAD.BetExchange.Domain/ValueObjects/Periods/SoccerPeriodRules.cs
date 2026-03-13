@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
+using PROG25.OOAD.BetExchange.Domain.ValueObjects.Dimensions;
 using PROG25.OOAD.BetExchange.Domain.ValueObjects.Events;
-using PROG25.OOAD.BetExchange.Domain.ValueObjects.Metrics;
+using PROG25.OOAD.BetExchange.Domain.ValueObjects.Metrics.Expressions;
 using PROG25.OOAD.BetExchange.Domain.ValueObjects.Sports;
 using PROG25.OOAD.BetExchange.Domain.ValueObjects.Timestamps;
 
@@ -8,172 +9,78 @@ namespace PROG25.OOAD.BetExchange.Domain.ValueObjects.Periods;
 
 public record SoccerPeriodRules : PeriodRules
 {
-    private static readonly WinnerRule MaxiumTeamGoalsWinnerRule = new
+    public static WinnerRule MaximumTeamGoalsWinnerRule(params int[] periodIndex) => new
     (
         Soccer.Goals,
         [Sport.TeamIdDimensionName],
+        [
+            ..
+            periodIndex.Select
+            (
+                pi =>
+                    new DimensionFilter
+                    (
+                        new Dictionary<string,object>
+                        {
+                            { Sport.PeriodDimensionName, pi }
+                        }.ToImmutableDictionary(),
+                        Soccer.Goals.Dimension
+                    )
+            )
+        ],
         OptimumType.Maximum
     );
 
-    private static readonly Period FirstHalf = new
+    public static Period PeriodFactory
     (
-        "First half",
-        new MetricExpressionChangedComparedToReferenceValueTimestamp
-        (
-            new FilteredAndAggregatedMetricExpression(Soccer.Period, []),
-            0,
-            ComparisonResult.GreaterThan,
-            FaultTolerance.Zero
-        ),
-        new MetricExpressionChangedComparedToReferenceValueTimestamp
-        (
-            new FilteredAndAggregatedMetricExpression(Soccer.Period, []),
-            1,
-            ComparisonResult.GreaterThan,
-            FaultTolerance.Zero
-        ),
-        MaxiumTeamGoalsWinnerRule
-    );
-
-    private static readonly Period SecondHalf = new
+        string periodName,
+        int periodStart,
+        int periodEnd,
+        ImmutableHashSet<Period>? children = null
+    ) => new
     (
-        "Second half",
-        new MetricExpressionChangedComparedToReferenceValueTimestamp
+        periodName,
+        new BooleanMetricExpressionTimestamp
         (
-            new FilteredAndAggregatedMetricExpression(Soccer.Period, []),
-            1,
-            ComparisonResult.GreaterThan,
-            FaultTolerance.Zero
+            new ComparisonBooleanMetricExpression
+            (
+                new DimensionLessMetricExpression(Soccer.Period),
+                new ConstantMetricExpression<decimal>(periodStart),
+                FaultTolerance.Zero,
+                ComparisonResult.GreaterThan
+            ),
+            true
         ),
-        new MetricExpressionChangedComparedToReferenceValueTimestamp
+        new BooleanMetricExpressionTimestamp
         (
-            new FilteredAndAggregatedMetricExpression(Soccer.Period, []),
-            2,
-            ComparisonResult.GreaterThan,
-            FaultTolerance.Zero
+            new ComparisonBooleanMetricExpression
+            (
+                new DimensionLessMetricExpression(Soccer.Period),
+                new ConstantMetricExpression<decimal>(periodEnd),
+                FaultTolerance.Zero,
+                ComparisonResult.GreaterThan
+            ),
+            true
         ),
-        MaxiumTeamGoalsWinnerRule
-    );
-
-    private static Period FullTime(ImmutableHashSet<Period> children) => new
-    (
-        "Full time",
-        new MetricExpressionChangedComparedToReferenceValueTimestamp
-        (
-            new FilteredAndAggregatedMetricExpression(Soccer.Period, []),
-            0,
-            ComparisonResult.GreaterThan,
-            FaultTolerance.Zero
-        ),
-        new MetricExpressionChangedComparedToReferenceValueTimestamp
-        (
-            new FilteredAndAggregatedMetricExpression(Soccer.Period, []),
-            2,
-            ComparisonResult.GreaterThan,
-            FaultTolerance.Zero
-        ),
-        MaxiumTeamGoalsWinnerRule,
+        MaximumTeamGoalsWinnerRule([.. Enumerable.Range(periodStart + 1, periodEnd - periodStart)]),
         children
     );
 
-    private static Period OT(ImmutableHashSet<Period> children) => new
-    (
-        "OT",
-        new MetricExpressionChangedComparedToReferenceValueTimestamp
-        (
-            new FilteredAndAggregatedMetricExpression(Soccer.Period, []),
-            2,
-            ComparisonResult.GreaterThan,
-            FaultTolerance.Zero
-        ),
-        new MetricExpressionChangedComparedToReferenceValueTimestamp
-        (
-            new FilteredAndAggregatedMetricExpression(Soccer.Period, []),
-            4,
-            ComparisonResult.GreaterThan,
-            FaultTolerance.Zero
-        ),
-        MaxiumTeamGoalsWinnerRule,
-        children
-    );
+    private static readonly Period FirstHalf = PeriodFactory("First Half", 0, 1);
 
-    private static readonly Period OT1 = new
-    (
-        "OT 1",
-        new MetricExpressionChangedComparedToReferenceValueTimestamp
-        (
-            new FilteredAndAggregatedMetricExpression(Soccer.Period, []),
-            2,
-            ComparisonResult.GreaterThan,
-            FaultTolerance.Zero
-        ),
-        new MetricExpressionChangedComparedToReferenceValueTimestamp
-        (
-            new FilteredAndAggregatedMetricExpression(Soccer.Period, []),
-            3,
-            ComparisonResult.GreaterThan,
-            FaultTolerance.Zero
-        ),
-        MaxiumTeamGoalsWinnerRule
-    );
+    private static readonly Period SecondHalf = PeriodFactory("Second half", 1, 2);
 
-    private static readonly Period OT2 = new
-    (
-        "OT 2",
-        new MetricExpressionChangedComparedToReferenceValueTimestamp
-        (
-            new FilteredAndAggregatedMetricExpression(Soccer.Period, []),
-            3,
-            ComparisonResult.GreaterThan,
-            FaultTolerance.Zero
-        ),
-        new MetricExpressionChangedComparedToReferenceValueTimestamp
-        (
-            new FilteredAndAggregatedMetricExpression(Soccer.Period, []),
-            4,
-            ComparisonResult.GreaterThan,
-            FaultTolerance.Zero
-        ),
-        MaxiumTeamGoalsWinnerRule
-    );
+    private static Period FullTime(ImmutableHashSet<Period> children) => PeriodFactory("Full time", 0, 2, children);
 
-    private static readonly Period Penalties = new
-    (
-        "Penalties",
-        new MetricExpressionChangedComparedToReferenceValueTimestamp
-        (
-            new FilteredAndAggregatedMetricExpression(Soccer.Period, []),
-            4,
-            ComparisonResult.GreaterThan,
-            FaultTolerance.Zero
-        ),
-        new MetricExpressionChangedComparedToReferenceValueTimestamp
-        (
-            new FilteredAndAggregatedMetricExpression(Soccer.Period, []),
-            5,
-            ComparisonResult.GreaterThan,
-            FaultTolerance.Zero
-        )
-    );
+    private static readonly Period OT1 = PeriodFactory("OT 1", 2, 3);
 
-    private static readonly Period SuddenDeath = new
-    (
-        "Sudden death",
-        new MetricExpressionChangedComparedToReferenceValueTimestamp
-        (
-            new FilteredAndAggregatedMetricExpression(Soccer.Period, []),
-            5,
-            ComparisonResult.GreaterThan,
-            FaultTolerance.Zero
-        ),
-        new MetricExpressionChangedComparedToReferenceValueTimestamp
-        (
-            new FilteredAndAggregatedMetricExpression(Soccer.Period, []),
-            6,
-            ComparisonResult.GreaterThan,
-            FaultTolerance.Zero
-        )
-    );
+    private static readonly Period OT2 = PeriodFactory("OT 2", 3, 4);
+
+    private static Period OverTime(ImmutableHashSet<Period> children) => PeriodFactory("Over time", 2, 4, children);
+
+    private static readonly Period Penalties = PeriodFactory("Penalties", 4, 5);
+
+    private static readonly Period SuddenDeath = PeriodFactory("Sudden death", 5, 6);
 
     public override Period? GetPeriod(EventData eventData)
     {
@@ -185,20 +92,22 @@ public record SoccerPeriodRules : PeriodRules
 
         var period = eventData.Metrics.GetByDefinition(Soccer.Period).Single().Value;
         var goals = eventData.Metrics.GetByDefinition(Soccer.Goals);
-        bool? isTied = period > 0 && period <= 4 ? Soccer.Goals
-                                                         .GroupBy([Sport.TeamIdDimensionName], goals)
-                                                         .Select(g => Soccer.Goals.Aggregate(g.Values))
-                                                         .Distinct()
-                                                         .Count() == 1 : null;
+
+        var goalsTotal = Soccer.Goals.Aggregate(Soccer.Goals.GroupBy([], goals).Single().Values);
+        var isTied = goalsTotal == 0 || Soccer.Goals.GroupBy([Sport.TeamIdDimensionName], goals).Count == 2 &&
+                                        Soccer.Goals.GroupBy([Sport.TeamIdDimensionName], goals)
+                                        .Select(g => Soccer.Goals.Aggregate(g.Values))
+                                        .Distinct()
+                                        .Count() == 1;
 
         var firstHalf = period <= 1 ? FirstHalf : null;
         var secondHalf = period <= 2 ? SecondHalf : null;
         var fullTime = period <= 2 ? FullTime([.. new[] { firstHalf, secondHalf }.Where(e => e != null).Cast<Period>()]) : null;
 
         var ot1 = period == 2 && isTied == true || period == 3 ? OT1 : null;
-        var ot2 = period == 2 && isTied == true || period == 4 ? OT2 : null;
+        var ot2 = period == 2 && isTied == true || period == 3 || period == 4 ? OT2 : null;
 
-        var ot = period == 2 && isTied == true || period >= 3 && period <= 4 ? OT([.. new[] { ot1, ot2 }.Where(e => e != null).Cast<Period>()]) : null;
+        var ot = period == 2 && isTied == true || period >= 3 && period <= 4 ? OverTime([.. new[] { ot1, ot2 }.Where(e => e != null).Cast<Period>()]) : null;
 
         var penalties = period == 4 && isTied == true || period == 5 ? Penalties : null;
 
@@ -217,7 +126,13 @@ public record SoccerPeriodRules : PeriodRules
             "Match",
             new NextEventStatusChangedTimestamp(EventStatus.InProgress),
             new NextEventStatusChangedTimestamp(EventStatus.Finished),
-            new WinnerRule(Soccer.Goals, [Sport.TeamIdDimensionName], OptimumType.Maximum),
+            new WinnerRule
+            (
+                Soccer.Goals,
+                [Sport.TeamIdDimensionName],
+                [],
+                OptimumType.Maximum
+            ),
             [.. children.Where(child => child != null).Cast<Period>()]
         );
     }
